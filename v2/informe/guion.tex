@@ -1,0 +1,110 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{Lato}[Path=/usr/share/fonts/truetype/lato/,Extension=.ttf,UprightFont=*-Regular,BoldFont=*-Bold,ItalicFont=*-Italic,BoldItalicFont=*-BoldItalic]
+\setmonofont{DejaVu Sans Mono}[Scale=0.8]
+\usepackage[spanish]{babel}
+\usepackage[margin=2cm]{geometry}
+\usepackage{xcolor,enumitem,booktabs,array,longtable}
+\usepackage[hidelinks]{hyperref}
+\definecolor{verde}{HTML}{0B5D45}
+\definecolor{gris}{HTML}{5C6D7E}
+\input{pruebas.tex}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\newcommand{\diapo}[2]{\par\medskip{\color{verde}\bfseries Diapositiva: #1}\hfill{\small\color{gris}#2}\par}
+\newcommand{\parte}[2]{\bigskip\par{\Large\bfseries\color{verde}#1}\hfill{\large\color{gris}#2}\par\smallskip\hrule\smallskip}
+\newcommand{\nota}[1]{{\small\color{gris}\itshape #1}\par}
+
+\begin{document}
+
+{\LARGE\bfseries\color{verde} Guion de la exposición}\\[4pt]
+{\large Centro de tráfico predictivo para Cuenca · 10 minutos + 5 de preguntas}\\[2pt]
+{\color{gris}Angel Apolo · Fernando Terán · Stalyn Ochoa · Karla Barrera}
+
+\medskip
+\begin{tabular}{@{}lllr@{}}
+\toprule
+Parte & Quién & Diapositivas & Tiempo \\
+\midrule
+Problema, lazo y datos & Angel & título a 3 & 2:40 \\
+Modelo de predicción & Fernando & 4 & 1:05 \\
+Detector y acción en SUMO & Stalyn & 5 y 6 & 1:55 \\
+Demo en vivo & Karla & 7 & 2:00 \\
+Resultados frente a la línea base & Fernando & 8 & 1:20 \\
+Lo que falta y conclusión & Karla & 9 y 10 & 0:40 \\
+\midrule
+& & Total & 9:40 \\
+\bottomrule
+\end{tabular}
+
+\nota{El docente evalúa cuatro cosas: el problema en una frase, el lazo dato–modelo–acción–medida–visualización, la demostración en vivo y los resultados frente a la línea base. Cada una tiene su diapositiva. Quedan 20 s de colchón; si la demo falla, se explica con la captura de la diapositiva 7.}
+
+\parte{Problema, lazo y datos}{Angel · 2:40}
+
+\diapo{Título}{0:15}
+Buenos días. Somos Angel, Fernando, Stalyn y Karla, y les presentamos un centro de tráfico predictivo para Cuenca.
+
+\diapo{1. El problema en una frase}{0:40}
+Nuestro problema en una frase: cuando un accidente cierra una avenida de Cuenca, nadie lo sabe hasta que la cola ya creció, y los autos que vienen detrás siguen entrando a ella. Por eso queremos un centro de tráfico que haga tres cosas: prever cómo estará la ciudad en una hora, detectar el accidente en pocos minutos y avisar por V2X a los autos que van hacia allá. Las metas del curso son las de la derecha.
+
+\diapo{2. El lazo completo}{0:55}
+El sistema es un lazo cerrado de cinco pasos. El dato sale de detectores por carril y de los autos conectados. El modelo son dos: una red que predice la velocidad a una hora y un detector de incidentes. La acción es un mensaje DENM, el aviso estándar de ETSI, que hace que los autos conectados cambien de ruta. La medida la hace SUMO: cuánto tiempo pierden los autos y cuánto crece la cola. Y la visualización es un tablero web que les vamos a mostrar en vivo. Como el tráfico cambia con la acción, el detector vuelve a medir: es un bucle cerrado con TraCI, minuto a minuto. Para saber qué cambia la acción, simulamos el mismo día dos veces, con y sin la IA.
+
+\diapo{3. Dato: gemelo digital}{0:50}
+Todo corre sobre un gemelo digital de Cuenca: la red real de OpenStreetMap en SUMO, con 66 días simulados y unos 190 mil viajes por día. Usamos datos sintéticos porque no hay datos de la EMOV para este periodo, pero están justificados: el generador está documentado con sus semillas, cada parámetro tiene una fuente publicada y comparamos el resultado con datos reales de Cuenca. Además, el programa acepta el dato real con el mismo formato: cuando llegue, solo cambia la fuente. Fernando les cuenta el primer modelo.
+
+\parte{Modelo de predicción}{Fernando · 1:05}
+
+\diapo{4. Predecir la ciudad dentro de una hora}{1:05}
+La idea es sencilla. Lo habitual, el promedio de esa hora en ese tipo de día, ya explica el tráfico de rutina. Entonces la red no adivina la velocidad desde cero: aprende la corrección, qué va a ser distinto hoy por la lluvia, un accidente o un día más cargado. Mira la última hora de cada celda, la mezcla con sus vecinas siguiendo el sentido de las calles y una GRU recuerda cómo evolucionó. Es liviana, de unos 30 mil parámetros, y con datos V2X los conteos se corrigen por la penetración. Stalyn sigue con el detector.
+
+\parte{Detector y acción en SUMO}{Stalyn · 1:55}
+
+\diapo{5. ¿Accidente u hora pico?}{1:05}
+Un accidente y la hora pico se ven igual si solo miramos la velocidad. El detector usa cuatro pistas: si la velocidad es rara para ese tramo a esa hora; si hay cola antes y vía vacía después, como en el algoritmo California; si toda la ciudad está lenta, que sería lluvia y no un accidente; y si el cambio fue brusco. Con 39 rasgos, un Gradient Boosting da la probabilidad y la alarma se confirma con tres minutos seguidos. El umbral lo elegimos sin mirar el test, con 51 días de entrenamiento y validación.
+
+\diapo{6. Acción: la IA dentro de SUMO}{0:50}
+Para la acción metimos el detector dentro de SUMO. Lee los detectores por TraCI cada segundo y decide cada minuto. Si confirma un accidente, manda un DENM a los autos conectados que están a menos de dos kilómetros y van hacia ese tramo; su navegador recalcula la ruta con el tráfico actual. El aviso caduca a los tres minutos sin alarma. Karla les muestra el resultado en vivo.
+
+\parte{Demo en vivo}{Karla · 2:00}
+
+\diapo{7. Demo en vivo}{2:00}
+\nota{Antes de exponer, dejar dos pestañas abiertas: \texttt{localhost:8097/?dia=38\&t=08:00\&capa=pred\#ciudad} y \texttt{localhost:8097/?t=14:05\#sil}, con la velocidad en 2 min/s. Si algo falla, quedarse en la diapositiva y explicar con la captura.}
+\nota{(Pestaña 1, unos 40 s)} Este es nuestro tablero. Estamos en un miércoles con lluvia a las 8 de la mañana. Esta capa es lo que la IA predice para las 9; cambio a lo que de verdad pasó a las 9, y se parecen. En la tarjeta de arriba se ve que ese día lo habitual se equivoca 5,4 km/h y la IA 1,8.
+\nota{(Pestaña 2, unos 80 s)} Ahora el accidente. Son las 14:05 del día 119; le doy a Reproducir. A la izquierda nadie avisa; a la derecha está nuestro sistema. A las 14:10 se cierra la avenida de las Américas y aparece la cola en los dos lados. A la derecha, los círculos azules son los avisos V2X a los autos que vienen. \nota{(Pausar cerca de 14:22)} Abajo está la cola medida en SUMO, y en la tabla, que los autos que iban hacia el cierre pierden 28~\% menos tiempo. Fernando les resume los resultados.
+
+\parte{Resultados frente a la línea base}{Fernando · 1:20}
+
+\diapo{8. Resultados frente a la línea base}{1:20}
+Cada parte la comparamos con la forma simple de hacerlo sin IA. En predicción, la línea base es el promedio histórico: se equivoca 3,16 km/h a una hora y nuestra red 1,82, un 43~\% menos; con solo la mitad de autos conectados, 1,86. En el día de lluvia la diferencia es mayor: 5,4 contra 1,8. En el detector, la línea base justa es uno que dispara al azar con la misma cantidad de alarmas: encuentra el 14~\% de los accidentes con cola y el nuestro el 90~\%, con falsas alarmas dentro de la meta. Y en el aviso, frente al mismo día sin aviso, la demora de los afectados baja 27,8~\% y la de toda la red 8,1~\%. Todo se midió una sola vez en días que los modelos nunca vieron, y \PruebasTotal{} pruebas automáticas verifican cada cifra.
+
+\parte{Lo que falta y conclusión}{Karla · 0:40}
+
+\diapo{9. Lo que falta y conclusión}{0:35}
+Lo que todavía no cumple: el detector tarda 7,3 minutos en días normales y con V2X detecta el 76~\%; y el 69~\% de los avisos salieron por falsas alarmas, aunque caducan y su costo ya está en el resultado. En conclusión, el lazo completo funciona: predice, detecta y avisa, y cuando lleguen los datos reales de la EMOV solo cambia la fuente, no el código.
+
+\diapo{10. Gracias}{0:05}
+Muchas gracias. Quedamos atentos a sus preguntas.
+
+\parte{Preparación}{}
+\begin{itemize}[leftmargin=*]
+\item Abrir el tablero: en \texttt{v2}, \texttt{python3 servir\_dashboard.py}, y dejar las dos pestañas de la demo listas.
+\item Ensayar con cronómetro: todo junto debe durar menos de 10 minutos.
+\item Cada uno termina presentando al siguiente.
+\end{itemize}
+
+\parte{Preguntas probables (5 minutos)}{}
+\begin{description}[leftmargin=0pt,font=\color{verde}\bfseries]
+\item[¿Por qué datos sintéticos?] Los datos de la EMOV dependen de terceros y no cubren el periodo. Los sintéticos están justificados: generador documentado con semillas, parámetros con fuente publicada y validación contra cifras reales de Cuenca (anexo del informe). Los resultados se etiquetan como sintéticos.
+\item[¿Cómo validaron el dato sintético?] Con cifras publicadas de Cuenca (Anexo C del informe). La hora pico de la tarde coincide (18 a 19 h) y la de la mañana sale una hora después; los límites de las Américas (50 y 70~km/h) coinciden; y la lluvia baja la velocidad como en la literatura. En volumen es conservador: en la Av. de las Américas simulamos hasta 2610 veh/h frente a 4500 a 5400 reales, cerca de la mitad, y lo declaramos así.
+\item[¿Qué pasa cuando llegue el dato real?] El programa lee tablas con un formato fijo, documentado en el repositorio, y hay un validador que revisa que el dato real cumpla ese formato. Solo cambia la carpeta de datos, no el código.
+\item[¿Cómo se replica?] El repositorio tiene un README con versiones y semillas, y un script único que repite el experimento completo y regenera cada tabla y figura del informe.
+\item[¿Cómo saben que no hicieron trampa con el test?] Separamos por días completos, las estadísticas salen solo de entrenamiento, el umbral se eligió con 51 días sin test y el test se miró una sola vez. Hay pruebas automáticas que lo verifican.
+\item[¿Por qué comparan contra el azar?] Con muchas alarmas cualquier detector acierta de casualidad; solo la diferencia con el azar (90 contra 14~\%) mide lo que aprendió.
+\item[¿Por qué el 69~\% de avisos falsos?] Son falsas alarmas en esa zona antes del accidente. El aviso caduca en 3 minutos y ese costo ya está dentro del −8,1~\% de la red.
+\item[¿Por qué la cola casi no baja?] Los autos atrapados no pueden salir; se gana evitando que los de atrás lleguen.
+\item[¿Es significativo con un solo accidente?] Muestra que el mecanismo funciona; correr más incidentes es el siguiente paso. En el detector, el intervalo de confianza de la detección es 69 a 94~\%, muy sobre el azar.
+\item[¿Por qué una red tan pequeña?] Porque aprende solo la corrección sobre lo habitual; con 30 mil parámetros basta y entrena en CPU.
+\end{description}
+
+\end{document}

@@ -1,0 +1,34 @@
+# datos grandes: se regeneran con ./repetir_experimento.sh --desde-cero
+dataset/celdas_5min/
+dataset/corredor_1min/
+dataset/viajes/
+# material interno del grupo y paquetes de entrega
+entrega/
+*.zip
+LEEME_PRIMERO.md
+CONTEXTO_Y_ESTADO_DEL_PROYECTO.md
+GUIA_MAESTRA.pdf
+v2/informe/guia_maestra.*
+v2/informe/investigacion_estado_arte.md
+v2/auditoria_*.py
+v2/preparar_zip.py
+v2/resultados/auditoria_*.json
+trabajo/
+grid/
+# temporales
+__pycache__/
+*.pyc
+.pytest_cache/
+*.bak*
+v2/pruebas/_tmp.js
+red/cuenca_bruta.net.xml
+
+# LaTeX intermedios
+*.aux
+*.log
+*.blg
+*.bbl
+*.out
+*.nav
+*.snm
+*.toc

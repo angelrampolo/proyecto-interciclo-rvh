@@ -1,0 +1,37 @@
+Todo el experimento está en el repositorio \url{\Repo}, etiqueta \texttt{\Tag}, que es la versión evaluada en este informe. El \texttt{README} basta para repetirlo en otra máquina.
+
+\textbf{Entorno.} SUMO 1.12 en la imagen Docker \texttt{van3twin:jammy} del repositorio del curso; Python 3.13.12 con numpy 2.5.4, pandas 3.1.1, pyarrow 26.0.1, scikit-learn 1.9.1, PyTorch 2.14.1 (CPU), joblib 1.6.0, matplotlib 3.11.2 y pytest 9.2.0, fijados en \texttt{requirements.txt}. El informe se compila con \texttt{tectonic}.
+
+\textbf{Semillas y parámetros.}
+\begin{itemize}
+\item Calendario de días: semilla 2026. Cada día en SUMO y \texttt{duarouter}: semilla 1000~+~día. Días extra del AID: semilla 2027. Barrido de saturación: semillas 101, 202 y 303.
+\item GCN-GRU: \texttt{torch.manual\_seed(42)}, AdamW con tasa 0,002, 32 unidades ocultas, lotes de 16, 12 épocas con sensores y 8 con V2X.
+\item AID: \texttt{random\_state=42}, 300 iteraciones, tasa 0,06 y 48 hojas.
+\item SIL: radio de 2~km, penalización de 600~s, caducidad de 3~min y calentamiento de 60~min.
+\end{itemize}
+El Anexo~\ref{an:param} lista los parámetros del generador.
+
+\textbf{Un solo script.} \texttt{./repetir\_experimento.sh} entrena y evalúa todo desde el dataset (unas 2,5~h en CPU). Con \texttt{--desde-cero} construye la red desde OSM y genera el dataset en SUMO (unas 13~h). Con \texttt{--solo-figuras} regenera en 2~min las tablas, figuras, el tablero y las pruebas desde las salidas guardadas en \texttt{v2/resultados/}. La Tabla~\ref{tab:scripts} indica qué genera cada resultado.
+
+\begin{table}[h]
+\centering
+\caption{Scripts que regeneran cada tabla y figura}
+\label{tab:scripts}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}L{2.35cm}L{2.9cm}L{3.1cm}@{}}
+\toprule
+Resultado & Script & Salida \\
+\midrule
+Tabla~\ref{tab:pred}, Fig.~\ref{fig:horizonte} & \texttt{entrenar\_prediccion.py} & \texttt{metricas\_prediccion\_*.json} \\
+Tabla~\ref{tab:aid}, Fig.~\ref{fig:aidazar} & \texttt{entrenar\_aid.py} & \texttt{metricas\_aid\_*.json} \\
+Tabla~\ref{tab:sil}, Fig.~\ref{fig:silcola} & \texttt{sil\_sumo.py} & \texttt{sil\_inc119\_3\_gt.json} \\
+Tabla~\ref{tab:valida} & \texttt{validar\_sintetico.py} & \texttt{validacion\_sintetico.json} \\
+Figuras (PDF) & \texttt{informe/figuras\_informe.py} & \texttt{informe/figuras/} \\
+Fig.~\ref{fig:dash} & \texttt{construir\_dashboard.py} & \texttt{dashboard/} \\
+Conteo de pruebas & \texttt{pytest v2/pruebas} & \texttt{informe/pruebas.tex} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Datos.} El dataset completo (1,5~GB) se regenera de forma determinista con el script. El repositorio incluye la red, el OSM de origen, las tablas pequeñas del dataset y todas las salidas que respaldan las cifras.

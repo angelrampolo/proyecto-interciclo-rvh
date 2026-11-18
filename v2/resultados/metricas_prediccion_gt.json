@@ -1,0 +1,680 @@
+{
+  "modo": "gt",
+  "historial": [
+    {
+      "epoca": 1,
+      "perdida_train": 1.579,
+      "val_MAE": 2.082,
+      "val_RMSE": 3.2,
+      "val_MAPE": 7.02,
+      "seg": 278
+    },
+    {
+      "epoca": 2,
+      "perdida_train": 1.292,
+      "val_MAE": 1.969,
+      "val_RMSE": 3.077,
+      "val_MAPE": 6.49,
+      "seg": 319
+    },
+    {
+      "epoca": 3,
+      "perdida_train": 1.2255,
+      "val_MAE": 1.908,
+      "val_RMSE": 3.028,
+      "val_MAPE": 6.17,
+      "seg": 277
+    },
+    {
+      "epoca": 4,
+      "perdida_train": 1.1752,
+      "val_MAE": 1.874,
+      "val_RMSE": 2.978,
+      "val_MAPE": 6.01,
+      "seg": 347
+    },
+    {
+      "epoca": 5,
+      "perdida_train": 1.1425,
+      "val_MAE": 1.844,
+      "val_RMSE": 2.892,
+      "val_MAPE": 5.97,
+      "seg": 273
+    },
+    {
+      "epoca": 6,
+      "perdida_train": 1.1175,
+      "val_MAE": 1.816,
+      "val_RMSE": 2.859,
+      "val_MAPE": 5.83,
+      "seg": 300
+    },
+    {
+      "epoca": 7,
+      "perdida_train": 1.0979,
+      "val_MAE": 1.812,
+      "val_RMSE": 2.869,
+      "val_MAPE": 5.8,
+      "seg": 342
+    },
+    {
+      "epoca": 8,
+      "perdida_train": 1.0854,
+      "val_MAE": 1.793,
+      "val_RMSE": 2.848,
+      "val_MAPE": 5.72,
+      "seg": 288
+    },
+    {
+      "epoca": 9,
+      "perdida_train": 1.0744,
+      "val_MAE": 1.795,
+      "val_RMSE": 2.844,
+      "val_MAPE": 5.71,
+      "seg": 280
+    },
+    {
+      "epoca": 10,
+      "perdida_train": 1.0665,
+      "val_MAE": 1.789,
+      "val_RMSE": 2.837,
+      "val_MAPE": 5.71,
+      "seg": 308
+    },
+    {
+      "epoca": 11,
+      "perdida_train": 1.0626,
+      "val_MAE": 1.787,
+      "val_RMSE": 2.848,
+      "val_MAPE": 5.68,
+      "seg": 252
+    },
+    {
+      "epoca": 12,
+      "perdida_train": 1.0594,
+      "val_MAE": 1.782,
+      "val_RMSE": 2.827,
+      "val_MAPE": 5.69,
+      "seg": 239
+    }
+  ],
+  "parametros": 29908,
+  "validacion": {
+    "persistencia": {
+      "+15min": {
+        "MAE": 3.12,
+        "RMSE": 5.02,
+        "MAPE": 9.97,
+        "n": 622943
+      },
+      "+30min": {
+        "MAE": 3.307,
+        "RMSE": 5.464,
+        "MAPE": 11.17,
+        "n": 623731
+      },
+      "+45min": {
+        "MAE": 3.473,
+        "RMSE": 5.843,
+        "MAPE": 12.17,
+        "n": 624456
+      },
+      "+60min": {
+        "MAE": 3.658,
+        "RMSE": 6.201,
+        "MAPE": 13.13,
+        "n": 625082
+      },
+      "desglose_60min": {
+        "hora_pico": {
+          "MAE": 3.828,
+          "RMSE": 6.513,
+          "MAPE": 16.05,
+          "n": 238652
+        },
+        "valle": {
+          "MAE": 3.552,
+          "RMSE": 5.999,
+          "MAPE": 11.33,
+          "n": 386430
+        },
+        "corredores": {
+          "MAE": 3.658,
+          "RMSE": 6.201,
+          "MAPE": 13.13,
+          "n": 625082
+        },
+        "resto_de_celdas": {
+          "MAE": NaN,
+          "RMSE": NaN,
+          "MAPE": NaN,
+          "n": 0
+        },
+        "celdas_con_incidente": {
+          "MAE": 8.617,
+          "RMSE": 14.863,
+          "MAPE": 78.66,
+          "n": 269
+        },
+        "congestion_real(v<0.55vff)": {
+          "MAE": 8.179,
+          "RMSE": 14.204,
+          "MAPE": 72.46,
+          "n": 40458
+        },
+        "dia_laborable": {
+          "MAE": 3.71,
+          "RMSE": 6.389,
+          "MAPE": 13.96,
+          "n": 490636
+        },
+        "dia_sabado": {
+          "MAE": 3.315,
+          "RMSE": 5.19,
+          "MAPE": 9.64,
+          "n": 78874
+        },
+        "dia_domingo": {
+          "MAE": 3.679,
+          "RMSE": 5.822,
+          "MAPE": 10.81,
+          "n": 55572
+        }
+      }
+    },
+    "promedio_historico": {
+      "+15min": {
+        "MAE": 2.544,
+        "RMSE": 3.928,
+        "MAPE": 8.73,
+        "n": 622943
+      },
+      "+30min": {
+        "MAE": 2.546,
+        "RMSE": 3.933,
+        "MAPE": 8.74,
+        "n": 623731
+      },
+      "+45min": {
+        "MAE": 2.548,
+        "RMSE": 3.936,
+        "MAPE": 8.74,
+        "n": 624456
+      },
+      "+60min": {
+        "MAE": 2.549,
+        "RMSE": 3.938,
+        "MAPE": 8.74,
+        "n": 625082
+      },
+      "desglose_60min": {
+        "hora_pico": {
+          "MAE": 2.487,
+          "RMSE": 3.85,
+          "MAPE": 8.7,
+          "n": 238652
+        },
+        "valle": {
+          "MAE": 2.588,
+          "RMSE": 3.992,
+          "MAPE": 8.77,
+          "n": 386430
+        },
+        "corredores": {
+          "MAE": 2.549,
+          "RMSE": 3.938,
+          "MAPE": 8.74,
+          "n": 625082
+        },
+        "resto_de_celdas": {
+          "MAE": NaN,
+          "RMSE": NaN,
+          "MAPE": NaN,
+          "n": 0
+        },
+        "celdas_con_incidente": {
+          "MAE": 7.535,
+          "RMSE": 13.72,
+          "MAPE": 72.8,
+          "n": 269
+        },
+        "congestion_real(v<0.55vff)": {
+          "MAE": 4.842,
+          "RMSE": 8.178,
+          "MAPE": 43.77,
+          "n": 40458
+        },
+        "dia_laborable": {
+          "MAE": 2.557,
+          "RMSE": 3.959,
+          "MAPE": 9.11,
+          "n": 490636
+        },
+        "dia_sabado": {
+          "MAE": 2.492,
+          "RMSE": 3.79,
+          "MAPE": 7.29,
+          "n": 78874
+        },
+        "dia_domingo": {
+          "MAE": 2.568,
+          "RMSE": 3.963,
+          "MAPE": 7.56,
+          "n": 55572
+        }
+      }
+    },
+    "modelo": {
+      "+15min": {
+        "MAE": 1.721,
+        "RMSE": 2.565,
+        "MAPE": 5.33,
+        "n": 622943
+      },
+      "+30min": {
+        "MAE": 1.75,
+        "RMSE": 2.7,
+        "MAPE": 5.52,
+        "n": 623731
+      },
+      "+45min": {
+        "MAE": 1.77,
+        "RMSE": 2.783,
+        "MAPE": 5.59,
+        "n": 624456
+      },
+      "+60min": {
+        "MAE": 1.782,
+        "RMSE": 2.827,
+        "MAPE": 5.69,
+        "n": 625082
+      },
+      "desglose_60min": {
+        "hora_pico": {
+          "MAE": 1.824,
+          "RMSE": 2.99,
+          "MAPE": 6.28,
+          "n": 238652
+        },
+        "valle": {
+          "MAE": 1.756,
+          "RMSE": 2.721,
+          "MAPE": 5.32,
+          "n": 386430
+        },
+        "corredores": {
+          "MAE": 1.782,
+          "RMSE": 2.827,
+          "MAPE": 5.69,
+          "n": 625082
+        },
+        "resto_de_celdas": {
+          "MAE": NaN,
+          "RMSE": NaN,
+          "MAPE": NaN,
+          "n": 0
+        },
+        "celdas_con_incidente": {
+          "MAE": 6.329,
+          "RMSE": 12.543,
+          "MAPE": 66.23,
+          "n": 269
+        },
+        "congestion_real(v<0.55vff)": {
+          "MAE": 2.784,
+          "RMSE": 4.835,
+          "MAPE": 22.41,
+          "n": 40458
+        },
+        "dia_laborable": {
+          "MAE": 1.793,
+          "RMSE": 2.927,
+          "MAPE": 5.9,
+          "n": 490636
+        },
+        "dia_sabado": {
+          "MAE": 1.716,
+          "RMSE": 2.392,
+          "MAPE": 4.84,
+          "n": 78874
+        },
+        "dia_domingo": {
+          "MAE": 1.776,
+          "RMSE": 2.475,
+          "MAPE": 5.02,
+          "n": 55572
+        }
+      }
+    }
+  },
+  "test": {
+    "persistencia": {
+      "+15min": {
+        "MAE": 3.148,
+        "RMSE": 5.129,
+        "MAPE": 10.44,
+        "n": 651545
+      },
+      "+30min": {
+        "MAE": 3.351,
+        "RMSE": 5.606,
+        "MAPE": 11.79,
+        "n": 652426
+      },
+      "+45min": {
+        "MAE": 3.54,
+        "RMSE": 6.028,
+        "MAPE": 12.96,
+        "n": 653317
+      },
+      "+60min": {
+        "MAE": 3.747,
+        "RMSE": 6.436,
+        "MAPE": 14.14,
+        "n": 654145
+      },
+      "desglose_60min": {
+        "hora_pico": {
+          "MAE": 3.946,
+          "RMSE": 6.816,
+          "MAPE": 18.01,
+          "n": 247549
+        },
+        "valle": {
+          "MAE": 3.625,
+          "RMSE": 6.192,
+          "MAPE": 11.78,
+          "n": 406596
+        },
+        "corredores": {
+          "MAE": 3.747,
+          "RMSE": 6.436,
+          "MAPE": 14.14,
+          "n": 654145
+        },
+        "resto_de_celdas": {
+          "MAE": NaN,
+          "RMSE": NaN,
+          "MAPE": NaN,
+          "n": 0
+        },
+        "celdas_con_incidente": {
+          "MAE": 5.369,
+          "RMSE": 11.017,
+          "MAPE": 38.28,
+          "n": 256
+        },
+        "congestion_real(v<0.55vff)": {
+          "MAE": 7.867,
+          "RMSE": 13.858,
+          "MAPE": 74.89,
+          "n": 48131
+        },
+        "dia_laborable": {
+          "MAE": 3.871,
+          "RMSE": 6.752,
+          "MAPE": 15.45,
+          "n": 502037
+        },
+        "dia_sabado": {
+          "MAE": 3.213,
+          "RMSE": 5.093,
+          "MAPE": 9.59,
+          "n": 89638
+        },
+        "dia_domingo": {
+          "MAE": 3.515,
+          "RMSE": 5.487,
+          "MAPE": 10.14,
+          "n": 62470
+        }
+      }
+    },
+    "promedio_historico": {
+      "+15min": {
+        "MAE": 3.154,
+        "RMSE": 5.012,
+        "MAPE": 12.36,
+        "n": 651545
+      },
+      "+30min": {
+        "MAE": 3.155,
+        "RMSE": 5.014,
+        "MAPE": 12.36,
+        "n": 652426
+      },
+      "+45min": {
+        "MAE": 3.158,
+        "RMSE": 5.017,
+        "MAPE": 12.36,
+        "n": 653317
+      },
+      "+60min": {
+        "MAE": 3.16,
+        "RMSE": 5.02,
+        "MAPE": 12.37,
+        "n": 654145
+      },
+      "desglose_60min": {
+        "hora_pico": {
+          "MAE": 3.063,
+          "RMSE": 4.923,
+          "MAPE": 12.59,
+          "n": 247549
+        },
+        "valle": {
+          "MAE": 3.218,
+          "RMSE": 5.078,
+          "MAPE": 12.23,
+          "n": 406596
+        },
+        "corredores": {
+          "MAE": 3.16,
+          "RMSE": 5.02,
+          "MAPE": 12.37,
+          "n": 654145
+        },
+        "resto_de_celdas": {
+          "MAE": NaN,
+          "RMSE": NaN,
+          "MAPE": NaN,
+          "n": 0
+        },
+        "celdas_con_incidente": {
+          "MAE": 5.612,
+          "RMSE": 11.447,
+          "MAPE": 37.89,
+          "n": 256
+        },
+        "congestion_real(v<0.55vff)": {
+          "MAE": 6.817,
+          "RMSE": 11.494,
+          "MAPE": 70.75,
+          "n": 48131
+        },
+        "dia_laborable": {
+          "MAE": 3.266,
+          "RMSE": 5.19,
+          "MAPE": 13.46,
+          "n": 502037
+        },
+        "dia_sabado": {
+          "MAE": 2.855,
+          "RMSE": 4.567,
+          "MAPE": 9.36,
+          "n": 89638
+        },
+        "dia_domingo": {
+          "MAE": 2.74,
+          "RMSE": 4.176,
+          "MAPE": 7.97,
+          "n": 62470
+        }
+      }
+    },
+    "modelo": {
+      "+15min": {
+        "MAE": 1.726,
+        "RMSE": 2.636,
+        "MAPE": 5.7,
+        "n": 651545
+      },
+      "+30min": {
+        "MAE": 1.764,
+        "RMSE": 2.828,
+        "MAPE": 6.08,
+        "n": 652426
+      },
+      "+45min": {
+        "MAE": 1.795,
+        "RMSE": 2.979,
+        "MAPE": 6.31,
+        "n": 653317
+      },
+      "+60min": {
+        "MAE": 1.816,
+        "RMSE": 3.074,
+        "MAPE": 6.55,
+        "n": 654145
+      },
+      "desglose_60min": {
+        "hora_pico": {
+          "MAE": 1.872,
+          "RMSE": 3.363,
+          "MAPE": 7.66,
+          "n": 247549
+        },
+        "valle": {
+          "MAE": 1.781,
+          "RMSE": 2.885,
+          "MAPE": 5.88,
+          "n": 406596
+        },
+        "corredores": {
+          "MAE": 1.816,
+          "RMSE": 3.074,
+          "MAPE": 6.55,
+          "n": 654145
+        },
+        "resto_de_celdas": {
+          "MAE": NaN,
+          "RMSE": NaN,
+          "MAPE": NaN,
+          "n": 0
+        },
+        "celdas_con_incidente": {
+          "MAE": 4.193,
+          "RMSE": 9.354,
+          "MAPE": 32.37,
+          "n": 256
+        },
+        "congestion_real(v<0.55vff)": {
+          "MAE": 3.316,
+          "RMSE": 6.315,
+          "MAPE": 32.23,
+          "n": 48131
+        },
+        "dia_laborable": {
+          "MAE": 1.841,
+          "RMSE": 3.237,
+          "MAPE": 7.01,
+          "n": 502037
+        },
+        "dia_sabado": {
+          "MAE": 1.739,
+          "RMSE": 2.544,
+          "MAPE": 5.22,
+          "n": 89638
+        },
+        "dia_domingo": {
+          "MAE": 1.726,
+          "RMSE": 2.342,
+          "MAPE": 4.79,
+          "n": 62470
+        }
+      }
+    }
+  },
+  "estres": {
+    "dia_43": {
+      "persistencia": {
+        "MAE": 4.016,
+        "RMSE": 7.381,
+        "MAPE": 18.87,
+        "n": 104851
+      },
+      "promedio_historico": {
+        "MAE": 2.951,
+        "RMSE": 5.397,
+        "MAPE": 16.66,
+        "n": 104851
+      },
+      "modelo": {
+        "MAE": 1.921,
+        "RMSE": 3.543,
+        "MAPE": 8.84,
+        "n": 104851
+      }
+    },
+    "dia_44": {
+      "persistencia": {
+        "MAE": 4.45,
+        "RMSE": 8.043,
+        "MAPE": 21.08,
+        "n": 113670
+      },
+      "promedio_historico": {
+        "MAE": 5.681,
+        "RMSE": 7.939,
+        "MAPE": 27.82,
+        "n": 113670
+      },
+      "modelo": {
+        "MAE": 1.853,
+        "RMSE": 3.578,
+        "MAPE": 9.41,
+        "n": 113670
+      }
+    },
+    "dia_45": {
+      "persistencia": {
+        "MAE": 3.737,
+        "RMSE": 6.415,
+        "MAPE": 14.09,
+        "n": 98899
+      },
+      "promedio_historico": {
+        "MAE": 2.531,
+        "RMSE": 3.846,
+        "MAPE": 8.78,
+        "n": 98899
+      },
+      "modelo": {
+        "MAE": 1.771,
+        "RMSE": 2.806,
+        "MAPE": 5.79,
+        "n": 98899
+      }
+    },
+    "dia_46": {
+      "persistencia": {
+        "MAE": 3.805,
+        "RMSE": 6.69,
+        "MAPE": 15.09,
+        "n": 99747
+      },
+      "promedio_historico": {
+        "MAE": 2.549,
+        "RMSE": 3.912,
+        "MAPE": 9.73,
+        "n": 99747
+      },
+      "modelo": {
+        "MAE": 1.795,
+        "RMSE": 2.971,
+        "MAPE": 6.31,
+        "n": 99747
+      }
+    }
+  }
+}

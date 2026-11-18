@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Uniones manuales de intersecciones que netconvert dejó partidas en varios nodos.
+     Av. de las Américas (doble calzada) con Av. Miraflores / Antonio Farfán / Mariano Cueva:
+     quedaba como dos cruces a ~60 m (uno con semáforo y otro de prioridad) con solo 40-50 m de
+     almacenamiento entre ellos; en la hora pico los giros de una calzada bloqueaban a la otra y la
+     red entera quedaba en gridlock (días 1, 2, 5, 11, 12 de la primera generación). -->
+<nodes>
+    <join nodes="601481943 6145396885 643437108 4049225303 611900860 4049225301 3068940716"/>
+</nodes>

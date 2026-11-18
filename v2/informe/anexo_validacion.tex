@@ -1,0 +1,24 @@
+Como no hay datos de la EMOV EP para el periodo, la validación compara magnitudes del dataset con cifras publicadas de Cuenca (Tabla~\ref{tab:valida}; \texttt{validar\_sintetico.py}). El volumen simulado de la Av.~de las Américas se mide como un aforo: los vehículos que cruzan una línea transversal en cada tramo de 200~m, sumando ambos sentidos, la vía central y las laterales, en los 24 laborables secos.
+
+\begin{table}[h]
+\centering
+\caption{Dato sintético frente a cifras reales de Cuenca}
+\label{tab:valida}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}L{2.4cm}L{2.0cm}L{2.15cm}L{1.75cm}@{}}
+\toprule
+Magnitud & Real & Sintético \sint & Lectura \\
+\midrule
+Américas, hora pico & 4500--5400 veh/h~\cite{elmercurio2021americas,elmercurio2022americas} & máx. 2610 veh/h (p90 2291) & \textasciitilde50--58~\% \\
+Américas, por día & 75\,000 veh~\cite{elmercurio2021americas} & máx. 34\,831 veh & \textasciitilde46~\% \\
+Viajes en auto por día & \textasciitilde400\,000 (estimado) & 207\,784 & \textasciitilde52~\% \\
+Hora pico mañana & 07:00--08:00~\cite{jacome2024radar} & 08:00--09:00 & 1~h de desfase \\
+Hora pico tarde & 18:00--19:00~\cite{jacome2024radar} & 18:00--19:00 & coincide \\
+Efecto de la lluvia & −6 a −9~\% vel. libre, −10 a −11~\% capacidad~\cite{hranac2006weather} & −14,8~\% vel. de viaje & más severo \\
+Límites, Américas & 50 y 70 km/h~\cite{canafe2026irap} & 50 y 70 km/h (y otros tramos) & coincide \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Lectura.} El sintético reproduce la forma del tráfico real: el pico de la tarde y, con una hora de desfase, el de la mañana; los límites de velocidad del corredor; y un efecto de la lluvia del mismo signo, algo más severo porque combina menor velocidad y más demanda. En volumen está en el orden de magnitud correcto, pero es conservador: los tres indicadores de volumen quedan en torno a la mitad de las cifras reales, que además son de prensa y sin método declarado. La demanda pico se fijó en la saturación de la red simulada sin rerouting; con más demanda la congestión no se disuelve. Por eso los resultados deben leerse como sintéticos: la mejora relativa frente a la línea base es la cifra relevante, y con demanda real el beneficio del aviso podría ser distinto. Un aforo propio en la Av. de las Américas, cargado con el formato del Anexo~\ref{an:transicion}, permitiría recalibrar la demanda.

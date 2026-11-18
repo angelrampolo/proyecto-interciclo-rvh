@@ -1,0 +1,113 @@
+{
+ "real": {
+  "americas_pico_veh_h": {
+   "valor": [
+    4500,
+    5400
+   ],
+   "fuente": "elmercurio2021americas, elmercurio2022americas",
+   "nota": "4500 veh/h un jueves entre el Parque Jacaranda y la gasolinera del Sindicato de Choferes; ~5400 veh/h en horas pico en el sector del Parque Industrial"
+  },
+  "americas_dia_veh": {
+   "valor": 75000,
+   "fuente": "elmercurio2021americas"
+  },
+  "horas_pico": {
+   "valor": [
+    "07:00-08:00",
+    "18:00-19:00"
+   ],
+   "fuente": "jacome2024radar",
+   "nota": "radares en la autopista Cuenca-Azogues; pico de mediodia en pena2021canaris"
+  },
+  "viajes_auto_dia": {
+   "valor": 400000,
+   "fuente": "elmercurio2026movilidad, cazorla2026unimobility, elmercurio2020carros",
+   "nota": "1,5 M viajes/dia x 32 % en auto / 1,2 personas por auto"
+  },
+  "lluvia_vel_libre_pct": {
+   "valor": [
+    -2,
+    -9
+   ],
+   "fuente": "hranac2006weather"
+  },
+  "lluvia_capacidad_pct": {
+   "valor": [
+    -10,
+    -11
+   ],
+   "fuente": "hranac2006weather"
+  },
+  "americas_limites_kmh": {
+   "valor": [
+    50,
+    70
+   ],
+   "fuente": "canafe2026irap",
+   "nota": "50 km/h via lateral, 70 km/h via central"
+  }
+ },
+ "sintetico": {
+  "americas_pico_veh_h": {
+   "mediana_secciones": 1053,
+   "p90": 2291,
+   "max": 2610,
+   "secciones": 37
+  },
+  "americas_dia_veh": {
+   "mediana_secciones": 13752,
+   "p90": 30881,
+   "max": 34831
+  },
+  "horas_pico": {
+   "manana": "08:00-09:00",
+   "tarde": "18:00-19:00",
+   "mediodia_relativo": 0.87
+  },
+  "viajes_auto_dia": {
+   "laborable_seco": 207784
+  },
+  "lluvia_vel_viaje_pct": -14.8,
+  "lluvia_parametros": {
+   "speedFactor": 0.88,
+   "demanda_pct": 4
+  },
+  "americas_limites_kmh": [
+   30,
+   40,
+   45,
+   50,
+   60,
+   70,
+   90
+  ],
+  "dias_usados": [
+   2,
+   4,
+   5,
+   8,
+   9,
+   10,
+   11,
+   12,
+   16,
+   17,
+   18,
+   19,
+   22,
+   23,
+   25,
+   29,
+   30,
+   31,
+   32,
+   33,
+   36,
+   37,
+   39,
+   40
+  ]
+ },
+ "nota": "Datos sinteticos de SUMO. Laborables secos de train, val y test. Volumen de seccion = autos que cruzan una linea transversal por el centro de cada celda de 200 m (ambos sentidos, central y laterales)."
+}

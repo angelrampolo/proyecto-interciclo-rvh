@@ -1,0 +1,29 @@
+### día 2
+== día 2 variante base (701 s)
+   h  en_red  detenidos  vel_media  teleports
+ 6.0     749         35       10.8          0
+ 7.0    1859        103       10.8          1
+ 8.0    3318        688        8.4         14
+ 9.0    3623       1099        7.2        148
+10.0    1958        335        9.5        264
+11.0    1789        165       10.4        264
+### día 5
+== día 5 variante base (695 s)
+   h  en_red  detenidos  vel_media  teleports
+ 6.0     748         38       11.0          0
+ 7.0    1842        107       10.7          0
+ 8.0    3380        744        8.3         16
+ 9.0    3525       1326        6.6        208
+10.0    2044        354        9.5        376
+11.0    1685        172       10.1        388
+### día 12
+== día 12 variante base (603 s)
+   h  en_red  detenidos  vel_media  teleports
+ 6.0     625         24       11.4          0
+ 7.0    1536         88       10.8          0
+ 8.0    2416        280        9.9          1
+ 9.0    2070        208       10.3          7
+10.0    1428         81       10.8          8
+11.0    1437         84       11.0          9
+
+[exited with code 1]

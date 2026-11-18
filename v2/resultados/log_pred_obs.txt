@@ -1,0 +1,78 @@
+[obs] train 6384 ventanas, val 1596 | carga 3s
+/home/angel/v2x/van3twin-docker/Proyecto Interciclo/v2/entrenar_prediccion.py:36: UserWarning: Sparse invariant checks are implicitly disabled. Memory errors (e.g. SEGFAULT) will occur when operating on a sparse tensor which violates the invariants, but checks incur performance overhead. To silence this warning, explicitly opt in or out. See `torch.sparse.check_sparse_tensor_invariants.__doc__` for guidance.  (Triggered internally at /__w/pytorch/pytorch/aten/src/ATen/Context.cpp:848.)
+  return torch.sparse_coo_tensor(np.stack([fila, col]), w, (N, N)).coalesce()
+{'epoca': 1, 'perdida_train': 1.5918, 'val_MAE': 2.1, 'val_RMSE': 3.242, 'val_MAPE': 7.13, 'seg': 307}
+{'epoca': 2, 'perdida_train': 1.3105, 'val_MAE': 1.99, 'val_RMSE': 3.076, 'val_MAPE': 6.64, 'seg': 323}
+{'epoca': 3, 'perdida_train': 1.2289, 'val_MAE': 1.926, 'val_RMSE': 3.044, 'val_MAPE': 6.21, 'seg': 310}
+{'epoca': 4, 'perdida_train': 1.1793, 'val_MAE': 1.89, 'val_RMSE': 2.966, 'val_MAPE': 6.08, 'seg': 256}
+{'epoca': 5, 'perdida_train': 1.1487, 'val_MAE': 1.85, 'val_RMSE': 2.934, 'val_MAPE': 5.94, 'seg': 283}
+{'epoca': 6, 'perdida_train': 1.1282, 'val_MAE': 1.828, 'val_RMSE': 2.892, 'val_MAPE': 5.91, 'seg': 264}
+{'epoca': 7, 'perdida_train': 1.1144, 'val_MAE': 1.812, 'val_RMSE': 2.862, 'val_MAPE': 5.86, 'seg': 246}
+{'epoca': 8, 'perdida_train': 1.1078, 'val_MAE': 1.816, 'val_RMSE': 2.883, 'val_MAPE': 5.83, 'seg': 231}
+/home/angel/v2x/van3twin-docker/Proyecto Interciclo/v2/comun.py:140: RuntimeWarning: Mean of empty slice
+  return {"MAE": round(float(np.abs(d).mean()), 3), "RMSE": round(float(np.sqrt((d ** 2).mean())), 3),
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/_methods.py:142: RuntimeWarning: invalid value encountered in divide
+  ret = ret.dtype.type(ret / rcount)
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:3862: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/angel/v2x/van3twin-docker/Proyecto Interciclo/v2/comun.py:140: RuntimeWarning: Mean of empty slice
+  return {"MAE": round(float(np.abs(d).mean()), 3), "RMSE": round(float(np.sqrt((d ** 2).mean())), 3),
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/_methods.py:142: RuntimeWarning: invalid value encountered in divide
+  ret = ret.dtype.type(ret / rcount)
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:3862: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/angel/v2x/van3twin-docker/Proyecto Interciclo/v2/comun.py:140: RuntimeWarning: Mean of empty slice
+  return {"MAE": round(float(np.abs(d).mean()), 3), "RMSE": round(float(np.sqrt((d ** 2).mean())), 3),
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/_methods.py:142: RuntimeWarning: invalid value encountered in divide
+  ret = ret.dtype.type(ret / rcount)
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:3862: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/angel/v2x/van3twin-docker/Proyecto Interciclo/v2/comun.py:140: RuntimeWarning: Mean of empty slice
+  return {"MAE": round(float(np.abs(d).mean()), 3), "RMSE": round(float(np.sqrt((d ** 2).mean())), 3),
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/_methods.py:142: RuntimeWarning: invalid value encountered in divide
+  ret = ret.dtype.type(ret / rcount)
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:3862: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/angel/v2x/van3twin-docker/Proyecto Interciclo/v2/comun.py:140: RuntimeWarning: Mean of empty slice
+  return {"MAE": round(float(np.abs(d).mean()), 3), "RMSE": round(float(np.sqrt((d ** 2).mean())), 3),
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/_methods.py:142: RuntimeWarning: invalid value encountered in divide
+  ret = ret.dtype.type(ret / rcount)
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:3862: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/home/angel/v2x/van3twin-docker/Proyecto Interciclo/v2/comun.py:140: RuntimeWarning: Mean of empty slice
+  return {"MAE": round(float(np.abs(d).mean()), 3), "RMSE": round(float(np.sqrt((d ** 2).mean())), 3),
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/_methods.py:142: RuntimeWarning: invalid value encountered in divide
+  ret = ret.dtype.type(ret / rcount)
+/home/angel/venv_cpu/lib/python3.13/site-packages/numpy/_core/fromnumeric.py:3862: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+
+== VAL (+60 min, celdas con autos) ==
+  persistencia         {'MAE': 3.658, 'RMSE': 6.201, 'MAPE': 13.13, 'n': 625082} | pico {'MAE': 3.828, 'RMSE': 6.513, 'MAPE': 16.05, 'n': 238652}
+  promedio_historico   {'MAE': 2.549, 'RMSE': 3.938, 'MAPE': 8.74, 'n': 625082} | pico {'MAE': 2.487, 'RMSE': 3.85, 'MAPE': 8.7, 'n': 238652}
+  modelo               {'MAE': 1.812, 'RMSE': 2.862, 'MAPE': 5.86, 'n': 625082} | pico {'MAE': 1.847, 'RMSE': 3.017, 'MAPE': 6.45, 'n': 238652}
+
+== TEST (una sola vez) (+60 min, celdas con autos) ==
+  persistencia         {'MAE': 3.747, 'RMSE': 6.436, 'MAPE': 14.14, 'n': 654145} | pico {'MAE': 3.946, 'RMSE': 6.816, 'MAPE': 18.01, 'n': 247549}
+  promedio_historico   {'MAE': 3.16, 'RMSE': 5.02, 'MAPE': 12.37, 'n': 654145} | pico {'MAE': 3.063, 'RMSE': 4.923, 'MAPE': 12.59, 'n': 247549}
+  modelo               {'MAE': 1.859, 'RMSE': 3.148, 'MAPE': 6.85, 'n': 654145} | pico {'MAE': 1.907, 'RMSE': 3.427, 'MAPE': 7.95, 'n': 247549}
+
+== ESTRES dia 43 (+60 min, celdas con autos) ==
+  persistencia         {'MAE': 4.016, 'RMSE': 7.381, 'MAPE': 18.87, 'n': 104851} | pico {'MAE': 4.19, 'RMSE': 7.727, 'MAPE': 25.72, 'n': 40395}
+  promedio_historico   {'MAE': 2.951, 'RMSE': 5.397, 'MAPE': 16.66, 'n': 104851} | pico {'MAE': 2.828, 'RMSE': 5.205, 'MAPE': 17.04, 'n': 40395}
+  modelo               {'MAE': 1.979, 'RMSE': 3.629, 'MAPE': 9.5, 'n': 104851} | pico {'MAE': 2.028, 'RMSE': 3.864, 'MAPE': 11.84, 'n': 40395}
+
+== ESTRES dia 44 (+60 min, celdas con autos) ==
+  persistencia         {'MAE': 4.45, 'RMSE': 8.043, 'MAPE': 21.08, 'n': 113670} | pico {'MAE': 4.619, 'RMSE': 8.307, 'MAPE': 28.18, 'n': 43114}
+  promedio_historico   {'MAE': 5.681, 'RMSE': 7.939, 'MAPE': 27.82, 'n': 113670} | pico {'MAE': 5.321, 'RMSE': 7.413, 'MAPE': 27.61, 'n': 43114}
+  modelo               {'MAE': 1.921, 'RMSE': 3.742, 'MAPE': 10.16, 'n': 113670} | pico {'MAE': 1.938, 'RMSE': 3.894, 'MAPE': 12.68, 'n': 43114}
+
+== ESTRES dia 45 (+60 min, celdas con autos) ==
+  persistencia         {'MAE': 3.737, 'RMSE': 6.415, 'MAPE': 14.09, 'n': 98899} | pico {'MAE': 3.891, 'RMSE': 6.672, 'MAPE': 17.68, 'n': 39242}
+  promedio_historico   {'MAE': 2.531, 'RMSE': 3.846, 'MAPE': 8.78, 'n': 98899} | pico {'MAE': 2.458, 'RMSE': 3.749, 'MAPE': 8.71, 'n': 39242}
+  modelo               {'MAE': 1.812, 'RMSE': 2.853, 'MAPE': 5.99, 'n': 98899} | pico {'MAE': 1.822, 'RMSE': 2.94, 'MAPE': 6.53, 'n': 39242}
+
+== ESTRES dia 46 (+60 min, celdas con autos) ==
+  persistencia         {'MAE': 3.805, 'RMSE': 6.69, 'MAPE': 15.09, 'n': 99747} | pico {'MAE': 4.014, 'RMSE': 7.109, 'MAPE': 19.98, 'n': 39033}
+  promedio_historico   {'MAE': 2.549, 'RMSE': 3.912, 'MAPE': 9.73, 'n': 99747} | pico {'MAE': 2.489, 'RMSE': 3.857, 'MAPE': 10.43, 'n': 39033}
+  modelo               {'MAE': 1.812, 'RMSE': 2.954, 'MAPE': 6.49, 'n': 99747} | pico {'MAE': 1.849, 'RMSE': 3.083, 'MAPE': 7.77, 'n': 39033}
+listo en 38.3 min

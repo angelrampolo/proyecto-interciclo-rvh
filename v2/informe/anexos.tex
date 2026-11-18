@@ -1,0 +1,27 @@
+\section{Supuestos}\label{an:supuestos}
+\begin{enumerate}
+\item \textbf{Solo automóviles.} No hay buses, motos ni tranvía. El tranvía hacía abortar SUMO~1.12 en los cruces, y los buses no cambian la velocidad media que se predice.
+\item \textbf{Comportamiento igual.} Los vehículos conectados conducen igual que los demás (modelo Krauss): estar conectado no implica conducción automatizada.
+\item \textbf{Rutas fijas.} Sin el aviso, los conductores no se desvían, por recomendación del docente. En el SIL, el cambio de ruta es precisamente la intervención, y solo lo hacen los vehículos avisados.
+\item \textbf{Penetración V2X fija.} Es de 50~\% en los días normales y de 30 y 70~\% en los de estrés. Los vehículos conectados son una muestra aleatoria del tráfico.
+\item \textbf{Comunicación ideal.} El DENM llega sin pérdidas ni retardo a todos los vehículos V2X del área de relevancia; la cobertura de radio no se simula.
+\item \textbf{Incidentes simulados.} Un incidente es un vehículo detenido por carril bloqueado. Su inicio y fin reales se toman de la salida de SUMO.
+\item \textbf{Lluvia.} Se representa con más demanda y conductores más prudentes, no con un modelo de adherencia.
+\item \textbf{Días independientes.} Cada día empieza con la red vacía y una hora de calentamiento que se descarta.
+\end{enumerate}
+
+\section{Parámetros del generador sintético y su fuente}\label{an:param}
+\input{anexo_parametros.tex}
+
+\section{Validación del dato sintético frente a datos reales}\label{an:valida}
+\input{anexo_validacion.tex}
+
+\section{Transición al dato real}\label{an:transicion}
+El código no depende del origen de los datos, sino de un formato fijo de tablas Parquet, documentado en \texttt{FORMATO\_DATOS.md}:
+\begin{itemize}
+\item velocidades por celda cada 5~min;
+\item conteos, velocidad y ocupación por arista de corredor cada minuto;
+\item calendario de días;
+\item registro de incidentes.
+\end{itemize}
+El script \texttt{validar\_datos.py} revisa que una carpeta tenga esas tablas, columnas, tipos y rangos físicos, y la variable \texttt{RVH\_DATOS} apunta el proyecto a esa carpeta. Cuando lleguen los conteos de la EMOV EP o de una cámara, basta con convertirlos a ese formato. Los datos de una sola fuente se copian en las dos vistas (\texttt{gt} y \texttt{obs}). Ningún script de entrenamiento, evaluación o visualización cambia.

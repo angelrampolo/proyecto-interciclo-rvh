@@ -1,0 +1,77 @@
+== día 13 variante base (693 s)
+   h  en_red  detenidos  vel_media  teleports
+-1.0       0          0       -1.0          0
+ 0.0     348         16       11.0          0
+ 1.0     185          6       11.9          0
+ 2.0     140          7       11.6          0
+ 3.0     128          3       11.6          0
+ 4.0      90          4       11.1          0
+ 5.0     130          9       10.5          0
+ 6.0     259          9       11.6          0
+ 7.0     553         25       11.0          0
+ 8.0     893         37       11.1          0
+ 9.0    1236         45       11.2          0
+10.0    1432         78       10.8          0
+11.0    2290        846        7.2        206
+12.0    3342       1732        5.2       1368
+== día 13 variante ijb (592 s)
+   h  en_red  detenidos  vel_media  teleports
+-1.0       0          0       -1.0          0
+ 0.0     348         16       11.0          0
+ 1.0     185          6       11.9          0
+ 2.0     140          7       11.6          0
+ 3.0     128          3       11.6          0
+ 4.0      90          4       11.1          0
+ 5.0     130          9       10.5          0
+ 6.0     259          9       11.6          0
+ 7.0     553         25       11.0          0
+ 8.0     893         37       11.1          0
+ 9.0    1236         45       11.2          0
+10.0    1448         80       10.8          0
+11.0    1627        109       10.8          0
+12.0    1732         94       10.8          1
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 254, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 203, in _process_chunk
+    return [fn(*args) for args in chunk]
+            ~~^^^^^^^
+  File "/home/angel/v2x/van3twin-docker/Proyecto Interciclo/etapa2/prueba_bloqueo.py", line 45, in correr
+    C.correr_sumo(t, dia['semilla'], int((hfin + 1) * 3600), con_tripinfo=False,
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  extra_rutas=['/t/incidentes.rou.xml'], log_file=t / 'log.txt', extra=cmd_extra)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/angel/v2x/van3twin-docker/Proyecto Interciclo/etapa2/comun.py", line 224, in correr_sumo
+    docker(cmd + list(extra), trabajo, log_file)
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/angel/v2x/van3twin-docker/Proyecto Interciclo/etapa2/prueba_bloqueo.py", line 11, in <lambda>
+    C.docker = lambda cmd, *a, **k: _dk([x for x in cmd if x != '--no-warnings'], *a, **k)
+                                    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/angel/v2x/van3twin-docker/Proyecto Interciclo/etapa2/comun.py", line 75, in docker
+    raise RuntimeError(f"falló {' '.join(cmd[:2])} (código {r.returncode}); ver {log_file}")
+RuntimeError: falló sumo -n (código 1); ver /home/angel/v2x/van3twin-docker/Proyecto Interciclo/trabajo/prueba_13_ijb_tp/log.txt
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/angel/v2x/van3twin-docker/Proyecto Interciclo/etapa2/prueba_bloqueo.py", line 56, in <module>
+    for var, s, seg in ex.map(correr, [(base, dia, hfin, v) for v in vars_]):
+                       ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/process.py", line 617, in _chain_from_iterable_of_lists
+    for element in iterable:
+                   ^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ~~~~~~~~~~^^^^^^^^^
+  File "/usr/lib/python3.13/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+RuntimeError: falló sumo -n (código 1); ver /home/angel/v2x/van3twin-docker/Proyecto Interciclo/trabajo/prueba_13_ijb_tp/log.txt

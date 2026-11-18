@@ -1,0 +1,572 @@
+{
+ "fecha": "2026-11-17 21:04",
+ "casos": [
+  {
+   "grupo": "codigo",
+   "titulo": "Todos los programas de Python del proyecto compilan sin errores de sintaxis.",
+   "id": "test_scripts_compilan",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "codigo",
+   "titulo": "La funcion de metricas da lo esperado en un caso calculado a mano (MAPE ignora velocidades <= 2 km/h).",
+   "id": "test_metricas_unitarias",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "codigo",
+   "titulo": "La alarma del AID solo se activa tras 'persistencia' minutos seguidos sobre el umbral.",
+   "id": "test_alarma_exige_minutos_seguidos",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "codigo",
+   "titulo": "El grafo de celdas es dirigido, sin lazos, con indices validos y cubre la mayoria de la ciudad.",
+   "id": "test_grafo_vial_valido",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "datos",
+   "titulo": "Los 20 dias extra del AID tienen 8 incidentes cada uno, no se mezclan con los originales y respetan el plan.",
+   "id": "test_dias_extra_bien_formados",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "datos",
+   "titulo": "En los datos por minuto: velocidades entre 0 y 1,5 veces la libre, ocupacion entre 0 y 100 %, flujos no negativos.",
+   "id": "test_detectores_fisicamente_validos",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "Cambiar todo lo que pasa despues del instante de prediccion no cambia la prediccion (causalidad).",
+   "id": "test_prediccion_no_usa_el_futuro",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "Recalculando el MAE a +60 min desde las predicciones guardadas se obtiene lo mismo que reporta el JSON. [sensores]",
+   "id": "test_prediccion_metricas_recalculadas[gt]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "Recalculando el MAE a +60 min desde las predicciones guardadas se obtiene lo mismo que reporta el JSON. [V2X]",
+   "id": "test_prediccion_metricas_recalculadas[obs]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "Predicciones sin NaN, bajo el limite fisico de SUMO (factor de velocidad maximo 2), sin mas excesos que la [sensores]",
+   "id": "test_prediccion_fisica_y_sin_sesgo[gt]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "Predicciones sin NaN, bajo el limite fisico de SUMO (factor de velocidad maximo 2), sin mas excesos que la [V2X]",
+   "id": "test_prediccion_fisica_y_sin_sesgo[obs]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Los rasgos de un minuto calculados con el dia completo son identicos a los calculados solo con el pasado",
+   "id": "test_aid_rasgos_no_usan_el_futuro",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Cargar el detector guardado y volver a predecir el dia 36 da las mismas probabilidades guardadas.",
+   "id": "test_aid_reproducible",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Recalculando DR y FAR del test desde las probabilidades guardadas se obtiene lo que reporta el JSON.",
+   "id": "test_aid_metricas_recalculadas",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Los dias usados para elegir el umbral son exactamente train + aid_train (fuera de pliegue) + validacion.",
+   "id": "test_aid_umbral_elegido_sin_test",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "sil",
+   "titulo": "El incidente del SIL forma una cola real (si no, la comparacion no mide nada).",
+   "id": "test_sil_incidente_forma_cola",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "sil",
+   "titulo": "Ambas corridas: mismos afectados (definidos por la ruta original), aviso solo en la de IA, ningun aviso durante el",
+   "id": "test_sil_corridas_comparables",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "sil",
+   "titulo": "Meta de operacion: la mayoria (75 %) de los avisos DENM corresponden al incidente real y no a falsas alarmas previas.",
+   "id": "test_sil_avisos_mayormente_utiles",
+   "estado": "falla",
+   "detalle": "AssertionError: 317 de 460 avisos fueron por falsas alarmas previas\nassert 317 <= (0.25 * 460)"
+  },
+  {
+   "grupo": "sil",
+   "titulo": "Los porcentajes de la comparacion salen de los valores base e IA reportados.",
+   "id": "test_sil_porcentajes_consistentes",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "sil",
+   "titulo": "La corrida base del SIL reproduce el dia del dataset en la arista del incidente: misma distribucion de velocidad",
+   "id": "test_sil_reproduce_el_dia_del_dataset",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "sil",
+   "titulo": "Lo que el AID lee en linea dentro de SUMO tiene la misma escala y variabilidad que los detectores del dataset",
+   "id": "test_sil_detectores_como_el_dataset",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Las cifras que muestra el tablero son las mismas de los archivos de resultados.",
+   "id": "test_dashboard_coherente_con_resultados",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Los binarios del tablero: la velocidad real coincide con la del test y la marca de 'hay autos' es 0/1.",
+   "id": "test_dashboard_binarios_coherentes",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada dia de test que se puede elegir en el tablero tiene sus datos completos y coinciden con el test.",
+   "id": "test_dashboard_dias_seleccionables",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [#inicio]",
+   "id": "test_dashboard_carga_sin_errores[#inicio]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [#ciudad]",
+   "id": "test_dashboard_carga_sin_errores[#ciudad]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [?t=08:00&capa=pred&celda=592#ciudad]",
+   "id": "test_dashboard_carga_sin_errores[?t=08:00&capa=pred&celda=592#ciudad]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [?t=08:00&capa=error#ciudad]",
+   "id": "test_dashboard_carga_sin_errores[?t=08:00&capa=error#ciudad]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [?fuente=obs&t=08:00&capa=futuro#ciudad]",
+   "id": "test_dashboard_carga_sin_errores[?fuente=obs&t=08:00&capa=futuro#ciudad]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [?t=12:10#aid]",
+   "id": "test_dashboard_carga_sin_errores[?t=12:10#aid]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [?t=12:10&conj=test_incidentes&fuente=obs#aid]",
+   "id": "test_dashboard_carga_sin_errores[?t=12:10&conj=test_incidentes&fuente=obs#aid]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [?t=14:20#sil]",
+   "id": "test_dashboard_carga_sin_errores[?t=14:20#sil]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [?paso=3#como]",
+   "id": "test_dashboard_carga_sin_errores[?paso=3#como]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [?paso=4#como]",
+   "id": "test_dashboard_carga_sin_errores[?paso=4#como]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [#pruebas]",
+   "id": "test_dashboard_carga_sin_errores[#pruebas]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [?dia=38&t=09:15&capa=pred#ciudad]",
+   "id": "test_dashboard_carga_sin_errores[?dia=38&t=09:15&capa=pred#ciudad]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Cada vista del tablero se abre en Chrome sin errores de JavaScript y dibuja contenido. [?dia=41&t=12:10&fuente=obs#aid]",
+   "id": "test_dashboard_carga_sin_errores[?dia=41&t=12:10&fuente=obs#aid]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "En la capa de error, las celdas sin autos dentro de 1 h no se pintan (su 'velocidad real' es un relleno).",
+   "id": "test_capa_error_solo_compara_celdas_con_autos",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "documentos",
+   "titulo": "El informe, las diapositivas y el guion usan las cifras de los resultados (MAE, DR, FAR, SIL). [informe.tex]",
+   "id": "test_documentos_citan_las_cifras_reales[informe.tex]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "documentos",
+   "titulo": "El informe, las diapositivas y el guion usan las cifras de los resultados (MAE, DR, FAR, SIL). [diapositivas.tex]",
+   "id": "test_documentos_citan_las_cifras_reales[diapositivas.tex]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "documentos",
+   "titulo": "El informe, las diapositivas y el guion usan las cifras de los resultados (MAE, DR, FAR, SIL). [guion.tex]",
+   "id": "test_documentos_citan_las_cifras_reales[guion.tex]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "documentos",
+   "titulo": "El informe y las diapositivas toman el numero de pruebas del ultimo banco (informe/pruebas.tex), sin escribirlo a mano.",
+   "id": "test_documentos_conteo_de_pruebas_automatico",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "documentos",
+   "titulo": "Las figuras del informe son posteriores a los resultados de los que salen.",
+   "id": "test_figuras_al_dia",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "documentos",
+   "titulo": "Los documentos LaTeX compilan sin errores. [informe.tex]",
+   "id": "test_documentos_compilan[informe.tex]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "documentos",
+   "titulo": "Los documentos LaTeX compilan sin errores. [diapositivas.tex]",
+   "id": "test_documentos_compilan[diapositivas.tex]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "documentos",
+   "titulo": "Los documentos LaTeX compilan sin errores. [guion.tex]",
+   "id": "test_documentos_compilan[guion.tex]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "datos",
+   "titulo": "Train, val, test y estres son dias distintos; el estres nunca se usa para entrenar.",
+   "id": "test_division_por_dias_sin_cruces",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "datos",
+   "titulo": "Cada ventana tiene 1 h de historia y su objetivo a +60 min dentro del mismo dia, despues de las 05:00.",
+   "id": "test_ventanas_no_cruzan_dias",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "datos",
+   "titulo": "Ningun canal de entrada usa columnas de etiqueta ni de configuracion del simulador.",
+   "id": "test_entradas_sin_etiquetas",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "datos",
+   "titulo": "Si no pasa ningun auto, la velocidad se rellena con la velocidad libre, nunca con 0.",
+   "id": "test_sin_autos_no_es_atasco",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "datos",
+   "titulo": "Los conteos V2X divididos por la penetracion se parecen a los reales tambien con 30 % y 70 %.",
+   "id": "test_correccion_por_penetracion",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "datos",
+   "titulo": "El promedio historico guardado en el modelo es el de train (no se filtra informacion del test).",
+   "id": "test_promedio_historico_solo_con_train",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "A +60 min la IA tiene menor MAE y RMSE que la persistencia y que el promedio historico (test). [sensores]",
+   "id": "test_modelo_supera_lineas_base[gt]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "A +60 min la IA tiene menor MAE y RMSE que la persistencia y que el promedio historico (test). [V2X]",
+   "id": "test_modelo_supera_lineas_base[obs]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "Meta del proyecto: MAE < 3 km/h y MAPE < 10 % a 60 min en el test. [sensores]",
+   "id": "test_meta_error_1h[gt]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "Meta del proyecto: MAE < 3 km/h y MAPE < 10 % a 60 min en el test. [V2X]",
+   "id": "test_meta_error_1h[obs]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "La IA gana al promedio historico justo donde importa: hora pico, congestion y celdas con incidente. [sensores]",
+   "id": "test_mejor_en_hora_pico_e_incidentes[gt]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "La IA gana al promedio historico justo donde importa: hora pico, congestion y celdas con incidente. [V2X]",
+   "id": "test_mejor_en_hora_pico_e_incidentes[obs]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "En los 4 dias de estres (mas demanda, lluvia, 30 % y 70 % V2X) sigue ganandole al promedio historico. [sensores]",
+   "id": "test_robustez_estres[gt]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "En los 4 dias de estres (mas demanda, lluvia, 30 % y 70 % V2X) sigue ganandole al promedio historico. [V2X]",
+   "id": "test_robustez_estres[obs]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "Las metricas reportadas salen de los 7 dias de test completos (no de validacion).",
+   "id": "test_metricas_son_del_test",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "prediccion",
+   "titulo": "Cargar el modelo guardado y predecir de nuevo da lo mismo que lo reportado.",
+   "id": "test_prediccion_reproducible",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Meta del curso: FAR <= 3-5 %. El umbral se elige (sin test) para FAR <= 3 %; aqui se verifica el limite del curso, 5 %. [sensores, días normales]",
+   "id": "test_aid_far[gt-test]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Meta del curso: FAR <= 3-5 %. El umbral se elige (sin test) para FAR <= 3 %; aqui se verifica el limite del curso, 5 %. [sensores, días con incidentes]",
+   "id": "test_aid_far[gt-test_incidentes]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Meta del curso: FAR <= 3-5 %. El umbral se elige (sin test) para FAR <= 3 %; aqui se verifica el limite del curso, 5 %. [V2X, días normales]",
+   "id": "test_aid_far[obs-test]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Meta del curso: FAR <= 3-5 %. El umbral se elige (sin test) para FAR <= 3 %; aqui se verifica el limite del curso, 5 %. [V2X, días con incidentes]",
+   "id": "test_aid_far[obs-test_incidentes]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Con la misma tasa de falsas alarmas, el AID detecta mas incidentes con impacto que un detector al azar. [sensores, días normales]",
+   "id": "test_aid_mejor_que_el_azar[gt-test]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Con la misma tasa de falsas alarmas, el AID detecta mas incidentes con impacto que un detector al azar. [sensores, días con incidentes]",
+   "id": "test_aid_mejor_que_el_azar[gt-test_incidentes]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Con la misma tasa de falsas alarmas, el AID detecta mas incidentes con impacto que un detector al azar. [V2X, días normales]",
+   "id": "test_aid_mejor_que_el_azar[obs-test]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Con la misma tasa de falsas alarmas, el AID detecta mas incidentes con impacto que un detector al azar. [V2X, días con incidentes]",
+   "id": "test_aid_mejor_que_el_azar[obs-test_incidentes]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Meta del docente: DR >= 85 % y MTTD < 5 min (sobre los incidentes que cambian el trafico). [sensores, días normales]",
+   "id": "test_aid_meta_deteccion[gt-test]",
+   "estado": "falla",
+   "detalle": "AssertionError: (83.33, 7.28)\nassert (83.33 >= 85)"
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Meta del docente: DR >= 85 % y MTTD < 5 min (sobre los incidentes que cambian el trafico). [sensores, días con incidentes]",
+   "id": "test_aid_meta_deteccion[gt-test_incidentes]",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Meta del docente: DR >= 85 % y MTTD < 5 min (sobre los incidentes que cambian el trafico). [V2X, días normales]",
+   "id": "test_aid_meta_deteccion[obs-test]",
+   "estado": "falla",
+   "detalle": "AssertionError: (83.33, 4.98)\nassert (83.33 >= 85)"
+  },
+  {
+   "grupo": "aid",
+   "titulo": "Meta del docente: DR >= 85 % y MTTD < 5 min (sobre los incidentes que cambian el trafico). [V2X, días con incidentes]",
+   "id": "test_aid_meta_deteccion[obs-test_incidentes]",
+   "estado": "falla",
+   "detalle": "AssertionError: (76.19, 2.94)\nassert (76.19 >= 85)"
+  },
+  {
+   "grupo": "aid",
+   "titulo": "El umbral y la persistencia se eligieron con validacion, no mirando el test.",
+   "id": "test_aid_umbral_elegido_en_validacion",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "sil",
+   "titulo": "El SIL corre en SUMO con miles de viajes reales y la misma demanda en ambas corridas.",
+   "id": "test_sil_sale_de_sumo",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "sil",
+   "titulo": "Con el aviso V2X baja la perdida de tiempo de los autos que iban hacia el incidente.",
+   "id": "test_sil_ia_mejora",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "sil",
+   "titulo": "El desvio no traslada el problema: la perdida media de toda la red no sube mas de 1 %.",
+   "id": "test_sil_no_empeora_la_red",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "El dashboard tiene sus datos y los binarios tienen el tamano esperado.",
+   "id": "test_dashboard_datos",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "El JavaScript del dashboard compila (node --check).",
+   "id": "test_dashboard_javascript_valido",
+   "estado": "ok",
+   "detalle": ""
+  },
+  {
+   "grupo": "dashboard",
+   "titulo": "Las metricas del dashboard vienen de los JSON de resultados, no de constantes en el HTML.",
+   "id": "test_sin_numeros_escritos_a_mano",
+   "estado": "ok",
+   "detalle": ""
+  }
+ ]
+}

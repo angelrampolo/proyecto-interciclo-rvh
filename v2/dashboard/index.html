@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Centro de Tráfico Cuenca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Centro de control vial: barra lateral de secciones, reloj y reproduccion arriba, mapa protagonista.
+   Tipografia de senaletica vial (condensada) para cifras y titulos. Escala semantica de congestion. */
+:root{
+  --bg:#0b1017; --panel:#111823; --panel2:#162030; --line:#223044; --line2:#2d3e57;
+  --fg:#e8eef6; --muted:#8fa0b6; --dim:#5c6d84;
+  --ia:#2ad4c4; --ia2:#1a8f86; --alerta:#ff4d5e; --aviso:#ffb547; --ok:#56d68a; --base:#9aa6b8; --denm:#7aa7ff;
+  --f-disp:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:15px/1.45 var(--f-body)}
+button,select,input{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);height:100%}
+/* barra lateral */
+nav{background:#080c12;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px;gap:6px;overflow:auto}
+.marca{display:flex;gap:10px;align-items:center;margin:0 4px 18px}
+.marca .logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--ia),#3b6cff);display:grid;place-items:center;font:700 17px var(--f-disp);color:#05121a}
+.marca b{font:700 19px/1 var(--f-disp);letter-spacing:.03em;display:block}
+.marca small{color:var(--muted);font-size:12px}
+nav button{all:unset;cursor:pointer;display:flex;gap:11px;align-items:center;padding:10px 12px;border-radius:8px;color:var(--muted);font-weight:500}
+nav button svg{width:18px;height:18px;flex:none}
+nav button:hover{background:var(--panel);color:var(--fg)}
+nav button.on{background:var(--panel2);color:var(--fg);box-shadow:inset 3px 0 0 var(--ia)}
+nav button:focus-visible{outline:2px solid var(--ia);outline-offset:2px}
+.fuente{margin-top:auto;border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px}
+.fuente label{font-size:12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px}
+.seg button{all:unset;cursor:pointer;text-align:center;padding:6px 4px;border-radius:6px;font-size:13px;color:var(--muted)}
+.seg button.on{background:var(--panel2);color:var(--fg)}
+.fuente p{margin:0;font-size:12px;color:var(--dim)}
+/* principal */
+main{display:flex;flex-direction:column;min-width:0;height:100%;overflow:hidden}
+.top{display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--bg);flex-wrap:wrap}
+.top h1{font:600 24px/1 var(--f-disp);margin:0;letter-spacing:.02em}
+.top .sub{color:var(--muted);font-size:13px}
+.reloj{margin-left:auto;display:flex;align-items:center;gap:12px}
+.hora{font:600 34px/1 var(--f-disp);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.hora small{font-size:15px;color:var(--muted);margin-left:6px}
+.ctrl{display:flex;gap:6px}
+.ctrl button{background:var(--panel);border:1px solid var(--line2);border-radius:8px;padding:7px 11px;cursor:pointer}
+.ctrl button:hover{border-color:var(--ia)}
+.ctrl button.play{background:var(--ia);border-color:var(--ia);color:#04211e;font-weight:600;min-width:92px}
+.linea{padding:0 20px 10px;border-bottom:1px solid var(--line);position:relative}
+#cTiempo{width:100%;height:46px;display:block;cursor:pointer}
+.vista{flex:1;overflow:auto;padding:18px 20px 28px}
+section[hidden]{display:none!important}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.card h2{font:600 17px/1.1 var(--f-disp);letter-spacing:.06em;text-transform:uppercase;margin:0 0 10px;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.card h2 small{font:400 12px var(--f-body);letter-spacing:0;text-transform:none;color:var(--muted)}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.mapa{position:relative;height:calc(100vh - 230px);min-height:460px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#070b10}
+.mapa canvas{width:100%;height:100%;display:block;cursor:grab}
+.mapa .capas{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:rgba(11,16,23,.85);border:1px solid var(--line2);border-radius:999px;padding:5px 11px;font-size:13px;cursor:pointer;backdrop-filter:blur(4px)}
+.chip.on{border-color:var(--ia);color:var(--ia)}
+.leyenda{position:absolute;left:12px;bottom:12px;background:rgba(11,16,23,.88);border:1px solid var(--line2);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--muted);backdrop-filter:blur(4px)}
+.escala{height:10px;width:220px;border-radius:5px;margin:6px 0 3px;background:linear-gradient(90deg,#c81e3a,#ff6a3d,#ffb547,#d7e36a,#56d68a)}
+.escala+div{display:flex;justify-content:space-between;width:220px;font-family:var(--f-mono);font-size:11px}
+.toast{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:8px;max-width:330px}
+.toast div{background:rgba(40,10,16,.92);border:1px solid var(--alerta);border-radius:10px;padding:9px 12px;font-size:13px;animation:entra .35s ease}
+.toast div.info{background:rgba(9,30,36,.92);border-color:var(--ia)}
+@keyframes entra{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.kpi{background:var(--panel2);border-radius:10px;padding:10px 12px}
+.kpi span{display:block;font-size:12px;color:var(--muted)}
+.kpi span.ayuda{display:inline-grid}
+#tablaAud .pill{white-space:normal;display:inline-block}
+.kpi b{font:600 28px/1.1 var(--f-disp);font-variant-numeric:tabular-nums}
+.kpi i{display:block;font-style:normal;font-size:12px;color:var(--dim)}
+canvas.graf{width:100%;height:190px;display:block}
+.nota{font-size:13px;color:var(--muted);margin:8px 0 0}
+.nota b{color:var(--fg);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.pill{font:500 11.5px var(--f-mono);padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:rgba(86,214,138,.14);color:var(--ok)} .pill.mal{background:rgba(255,77,94,.14);color:var(--alerta)}
+.pill.med{background:rgba(255,181,71,.14);color:var(--aviso)} .pill.neu{background:rgba(143,160,182,.14);color:var(--muted)}
+.tw{overflow-x:auto}
+.grande{font:600 44px/1 var(--f-disp);font-variant-numeric:tabular-nums}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.duo .card h2 .tag{font:600 12px var(--f-mono);padding:2px 8px;border-radius:6px}
+.mini{height:330px;border-radius:10px;overflow:hidden;background:#070b10;border:1px solid var(--line)}
+.mini canvas{width:100%;height:100%;display:block}
+.barras{display:flex;flex-direction:column;gap:10px}
+.barra .t{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.barra .t b{font-family:var(--f-mono);color:var(--fg);font-weight:500}
+.barra .r{height:10px;border-radius:5px;background:var(--panel2);overflow:hidden;margin-top:4px;display:flex}
+.barra .r div{height:100%;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+/* como funciona */
+.flujo{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;position:relative}
+.paso{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;transition:border-color .3s,transform .3s}
+.paso:hover,.paso.on{border-color:var(--ia);transform:translateY(-3px)}
+.paso .num{font:700 13px var(--f-mono);color:var(--ia)}
+.paso h3{font:600 20px/1.1 var(--f-disp);margin:6px 0;letter-spacing:.02em}
+.paso p{margin:0;font-size:13px;color:var(--muted)}
+#cFlujo{width:100%;height:90px;display:block}
+.detalle{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;margin-top:14px}
+.detalle p{color:var(--muted);margin:0 0 10px;max-width:70ch}
+.detalle p b{color:var(--fg)}
+code{font:12.5px var(--f-mono);background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.test{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line)}
+.test .ic{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font:700 12px var(--f-mono)}
+.test .ic.ok{background:rgba(86,214,138,.18);color:var(--ok)} .test .ic.mal{background:rgba(255,77,94,.18);color:var(--alerta)}
+.test .ic.av{background:rgba(255,181,71,.18);color:var(--aviso)}
+.test small{display:block;color:var(--dim);font-size:12.5px}
+.ayuda{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;border:1px solid var(--line2);font:600 11px var(--f-mono);color:var(--muted);cursor:help;position:relative;margin-left:4px}
+.ayuda:hover::after{content:attr(data-t);position:absolute;bottom:130%;left:50%;transform:translateX(-50%);width:260px;background:#0d141e;border:1px solid var(--line2);padding:8px 10px;border-radius:8px;font:400 12.5px/1.4 var(--f-body);color:var(--fg);z-index:9;text-align:left}
+#cargando{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:99;font:600 22px var(--f-disp);letter-spacing:.05em;color:var(--muted)}
+/* inicio y guias */
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:stretch}
+.hero h2.big{font:700 40px/1.05 var(--f-disp);margin:0 0 10px;letter-spacing:.01em}
+.hero p.lead{font-size:17px;color:var(--muted);margin:0 0 14px;max-width:62ch}
+.tres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
+.res{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:border-color .25s,transform .25s}
+.res:hover{border-color:var(--ia);transform:translateY(-2px)}
+.res .n{font:700 13px var(--f-mono);color:var(--ia);letter-spacing:.05em}
+.res h3{font:600 24px/1.1 var(--f-disp);margin:0}
+.res .cifra{font:700 46px/1 var(--f-disp);font-variant-numeric:tabular-nums}
+.res .cifra small{font-size:18px;color:var(--muted);font-weight:500;margin-left:4px}
+.res p{margin:0;font-size:14px;color:var(--muted)}
+.res .ir{margin-top:auto;align-self:flex-start;background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:7px 12px;cursor:pointer}
+.res .ir:hover{border-color:var(--ia);color:var(--ia)}
+.pasos-lectura{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.pasos-lectura li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:start;font-size:14px;color:var(--muted)}
+.pasos-lectura li b{color:var(--fg)}
+.pasos-lectura .k{width:28px;height:28px;border-radius:8px;background:var(--panel2);display:grid;place-items:center;font:700 13px var(--f-mono);color:var(--ia)}
+.glosario{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:6px}
+.glosario div{background:var(--panel2);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--muted)}
+.glosario b{display:block;color:var(--fg);font:600 16px var(--f-disp);letter-spacing:.03em}
+.guia{display:flex;gap:14px;align-items:flex-start;background:linear-gradient(90deg,rgba(42,212,196,.10),rgba(42,212,196,.02));border:1px solid rgba(42,212,196,.35);border-radius:12px;padding:11px 14px;margin-bottom:14px;font-size:14px}
+.guia .ico{flex:none;width:26px;height:26px;border-radius:50%;background:var(--ia);color:#04211e;display:grid;place-items:center;font:700 14px var(--f-mono)}
+.guia p{margin:0;color:var(--muted)} .guia p b{color:var(--fg)}
+.guia .x{all:unset;cursor:pointer;margin-left:auto;color:var(--dim);font-size:18px;line-height:1;padding:0 4px}
+.guia .x:hover{color:var(--fg)}
+body.sin-reloj .reloj,body.sin-reloj .linea{display:none}
+@media (max-width:1150px){.hero,.tres{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1150px){.grid2{grid-template-columns:minmax(0,1fr)}.flujo{grid-template-columns:repeat(2,minmax(0,1fr))}.detalle,.duo{grid-template-columns:minmax(0,1fr)}.mapa{height:62vh}}
+@media (max-width:760px){.app{grid-template-columns:minmax(0,1fr)}nav{flex-direction:row;overflow-x:auto;padding:8px}.marca,.fuente{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.leyenda .sinautos{display:flex;align-items:center;gap:6px;margin-top:5px}.leyenda .sinautos i{display:inline-block;width:10px;height:10px;background:rgba(143,160,182,.35);border-radius:2px}
+.fuente+.fuente{margin-top:0}
+.dias7{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px}
+.dias7 button{all:unset;cursor:pointer;text-align:center;padding:4px 0 3px;border-radius:6px;font-size:13px;color:var(--muted);line-height:1.1}
+.dias7 button small{display:block;font-size:10px;color:var(--dim)}
+.dias7 button.on{background:var(--panel2);color:var(--fg)}
+.dias7 button.lluvia{box-shadow:inset 0 -2px 0 #7aa7ff}
+.fuente.inactivo .dias7{opacity:.4;pointer-events:none}
+.ficha .etq{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 8px}
+.ficha .etq span{font-size:12px;border:1px solid var(--line2);border-radius:999px;padding:2px 9px;color:var(--muted)}
+.ficha .etq span.az{border-color:#7aa7ff;color:#a9c4ff}
+.ficha .etq span.am{border-color:#ffb547;color:#ffcf85}
+.ficha p.que{margin:0 0 8px;font-size:13px;color:var(--fg)}
+.ficha dl{display:grid;grid-template-columns:auto auto;gap:3px 12px;margin:0;font-size:12.5px}
+.ficha dt{color:var(--muted)}.ficha dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.sint{display:inline-block;margin-left:6px;font-size:11px;padding:1px 7px;border:1px solid var(--line2);border-radius:999px;color:var(--muted);vertical-align:1px}
+</style>
+</head>
+<body>
+<div id="cargando">Cargando la ciudad…</div>
+<div class="app">
+  <nav aria-label="Secciones">
+    <div class="marca"><div class="logo">CU</div><div><b>Tráfico Cuenca</b><small>Predicción 1 h · AID · V2X</small></div></div>
+    <button data-s="inicio" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Inicio</button>
+    <button data-s="ciudad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>Ciudad en vivo</button>
+    <button data-s="aid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>Detector de incidentes</button>
+    <button data-s="sil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12a8 8 0 0114-5.3M20 12a8 8 0 01-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/></svg>Bucle cerrado SUMO</button>
+    <button data-s="como"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 11l3-4M7 13l3 4M14 7l3 4M14 17l3-4"/></svg>Cómo funciona</button>
+    <button data-s="pruebas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h9"/></svg>Banco de pruebas</button>
+    <div class="fuente" id="bloqueDia">
+      <label>Día simulado <span class="ayuda" data-t="Los 7 días de la semana de test (36 a 42), que la IA nunca vio al entrenar. Cambia la ciudad y el detector. La línea azul marca el día de lluvia.">?</span></label>
+      <div class="dias7" id="selDia" role="group" aria-label="Día simulado"></div>
+      <p id="diaTxt"></p>
+    </div>
+    <div class="fuente">
+      <label>Fuente de datos <span class="ayuda" data-t="Sensores: detectores en la vía que ven todos los autos. V2X 50 %: solo la mitad de autos, los conectados, envían sus datos; es lo realista hoy.">?</span></label>
+      <div class="seg" role="group" aria-label="Fuente de datos">
+        <button data-f="gt" class="on">Sensores</button><button data-f="obs">V2X 50 %</button>
+      </div>
+      <p id="fuenteTxt"></p>
+    </div>
+  </nav>
+  <main>
+    <div class="top">
+      <div><h1 id="titulo">Ciudad en vivo</h1><div class="sub"><span id="subtitulo"></span> <span class="sint" title="Todos los datos vienen de la simulación en SUMO, no de sensores reales de Cuenca">datos sintéticos · SUMO</span></div></div>
+      <div class="reloj">
+        <div class="hora" id="hora">00:00<small></small></div>
+        <div class="ctrl">
+          <button id="atras" aria-label="Retroceder 15 minutos">−15 min</button>
+          <button id="play" class="play">Reproducir</button>
+          <button id="adelante" aria-label="Avanzar 15 minutos">+15 min</button>
+          <select id="vel" aria-label="Velocidad de reproducción"><option value="2">2 min/s</option><option value="5" selected>5 min/s</option><option value="15">15 min/s</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="linea"><canvas id="cTiempo" aria-label="Línea de tiempo del día"></canvas></div>
+    <div class="vista">
+
+<section id="s-inicio">
+  <div class="hero">
+    <div class="card" style="padding:22px 24px">
+      <h2 class="big">Un centro de tráfico para Cuenca que se adelanta a los atascos</h2>
+      <p class="lead">Simulamos el tráfico de Cuenca en SUMO, día por día. Sobre esa simulación, una IA <b>predice la velocidad de toda la ciudad con una hora de anticipación</b>, otra <b>detecta accidentes en las avenidas principales</b> minuto a minuto y, cuando encuentra uno, <b>avisa a los autos conectados (V2X)</b> para que tomen otro camino.</p>
+      <ol class="pasos-lectura">
+        <li><span class="k">1</span><span><b>Elige una sección</b> en la barra de la izquierda. Te recomendamos seguir el orden.</span></li>
+        <li><span class="k">2</span><span><b>Pulsa Reproducir</b> (arriba a la derecha) o arrastra la línea de tiempo: el mapa y los gráficos avanzan juntos.</span></li>
+        <li><span class="k">3</span><span><b>Colores del mapa:</b> verde es tráfico libre, amarillo lento y rojo atasco.</span></li>
+        <li><span class="k">4</span><span><b>¿Una palabra rara?</b> Pasa el mouse sobre los círculos <span class="ayuda" data-t="Así: cada término técnico tiene su explicación corta.">?</span> o mira el glosario de abajo.</span></li>
+      </ol>
+    </div>
+    <div class="card" style="padding:18px 20px">
+      <h2>De dónde salen los datos <small>todo medido, nada escrito a mano</small></h2>
+      <ul class="pasos-lectura">
+        <li><span class="k">S</span><span><b>SUMO</b> simula 46 días de tráfico de Cuenca (unos 190.000 viajes por día) y 20 días extra con accidentes.</span></li>
+        <li><span class="k">D</span><span><b>Detectores</b> virtuales en cada carril de las avenidas Américas, Circunvalación Sur y Remigio Crespo–Solano.</span></li>
+        <li><span class="k">V</span><span><b>V2X:</b> en la vida real solo algunos autos están conectados; probamos con la mitad (50 %).</span></li>
+        <li><span class="k">T</span><span><b>Prueba justa:</b> los resultados son de días que la IA nunca vio al entrenar.</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="tres" id="tresRes"></div>
+  <div class="card" style="margin-top:16px">
+    <h2>Glosario <small>las palabras que vas a ver</small></h2>
+    <div class="glosario" id="glosario"></div>
+  </div>
+</section>
+
+<section id="s-ciudad" hidden>
+  <div class="guia" data-g="ciudad"><div class="ico">i</div><p><b>Qué ves:</b> la velocidad en cada cuadra (celdas de 200 m) a la hora del reloj. <b>Prueba:</b> cambia la capa a <b>“IA: dentro de 1 h”</b> y luego a <b>“Real dentro de 1 h”</b>: si se parecen, la IA acertó. Las celdas grises no tienen autos en ese momento (no hay velocidad que medir). Toca una celda para ver su pronóstico.</p><button class="x" aria-label="Ocultar ayuda">×</button></div>
+  <div class="grid2">
+    <div class="mapa" id="mapaBox">
+      <canvas id="cMapa" aria-label="Mapa de Cuenca"></canvas>
+      <div class="capas" role="group" aria-label="Capa del mapa">
+        <span class="chip on" data-c="real">Ahora (real)</span>
+        <span class="chip" data-c="pred">IA: dentro de 1 h</span>
+        <span class="chip" data-c="futuro">Real dentro de 1 h</span>
+        <span class="chip" data-c="error">Error de la IA</span>
+      </div>
+      <div class="toast" id="toastCiudad"></div>
+      <div class="leyenda" id="leyendaCiudad"><div id="leyTit">Velocidad / velocidad libre</div><div class="escala"></div><div><span>0,2 atasco</span><span>0,6</span><span>1,0 libre</span></div><div class="sinautos" id="leySin"><i></i>gris: celda sin autos (no hay velocidad que medir)</div></div>
+    </div>
+    <div class="col">
+      <div class="card ficha" id="fichaDia"></div>
+      <div class="card">
+        <h2>La ciudad ahora <small id="ciudadT"></small></h2>
+        <div class="kpis">
+          <div class="kpi"><span>Velocidad media de la red</span><b id="kVel">–</b><i>km/h, celdas con autos</i></div>
+          <div class="kpi"><span>Celdas congestionadas</span><b id="kCong">–</b><i>v ≤ 0,55 · v libre</i></div>
+          <div class="kpi"><span>Error de la IA a 1 h <span class="ayuda" data-t="Diferencia promedio, en km/h, entre la velocidad que la IA predijo hace una hora y la que realmente hubo.">?</span></span><b id="kErr">–</b><i>km/h promedio, este instante</i></div>
+          <div class="kpi"><span>Promedio histórico <span class="ayuda" data-t="La referencia más simple: predecir lo que suele pasar ese día de la semana a esa hora. La IA tiene que ganarle.">?</span></span><b id="kHa">–</b><i>error de la línea base</i></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Celda seleccionada <small id="celdaTxt">toca una celda del mapa</small></h2>
+        <canvas class="graf" id="cCelda"></canvas>
+        <p class="nota" id="celdaNota"></p>
+      </div>
+      <div class="card">
+        <h2>Error a +60 min en el test <small>km/h, menos es mejor</small></h2>
+        <div class="barras" id="barrasPred"></div>
+        <p class="nota" id="notaPred"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s-aid" hidden>
+  <div class="guia" data-g="aid"><div class="ico">i</div><p><b>Qué ves:</b> las tres avenidas vigiladas. Cada tramo se colorea con la probabilidad de que haya un accidente; los recuadros blancos de la franja inferior son accidentes reales. <b>Prueba:</b> reproduce el día y mira si el color sube justo cuando aparece un recuadro. A la derecha, compara la IA con un detector que adivina al azar.</p><button class="x" aria-label="Ocultar ayuda">×</button></div>
+  <div class="grid2">
+    <div class="col">
+      <div class="mapa" id="mapaAidBox" style="height:calc(100vh - 420px);min-height:380px">
+        <canvas id="cMapaAid" aria-label="Corredores vigilados por el AID"></canvas>
+        <div class="toast" id="toastAid"></div>
+        <div class="leyenda"><div>Probabilidad de incidente por tramo</div><div class="escala" style="background:linear-gradient(90deg,#2a4a64 0%,#2ad4c4 30%,#ffb547 60%,#ff4d5e 100%)"></div><div><span>0</span><span>0,5</span><span>1</span></div><div style="margin-top:4px">Línea gruesa: tramo en alarma</div></div>
+      </div>
+      <div class="card">
+        <h2>Probabilidad en los corredores, minuto a minuto <small>cada fila es un tramo; los recuadros son incidentes reales</small></h2>
+        <canvas class="graf" id="cAidMatriz" style="height:170px"></canvas>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h2>Resultado en el test <small id="aidFuente"></small></h2>
+        <div class="seg" id="segConj" role="group" aria-label="Conjunto de prueba" style="margin-bottom:10px">
+          <button data-c="test" class="on">Días normales (36–42)</button><button data-c="test_incidentes">Días con incidentes (117–120)</button>
+        </div>
+        <div class="kpis" id="aidKpis"></div>
+        <div id="aidClima" class="nota"></div>
+        <p class="nota" id="aidNota"></p>
+      </div>
+      <div class="card">
+        <h2>¿Mejor que el azar? <small>misma tasa de falsas alarmas</small></h2>
+        <canvas class="graf" id="cAzar" style="height:160px"></canvas>
+        <p class="nota" id="azarNota"></p>
+      </div>
+      <div class="card">
+        <h2>Umbral de alarma <small>mueve el control</small></h2>
+        <input type="range" id="umbral" min="0" max="100" value="50" style="width:100%" aria-label="Umbral de alarma">
+        <canvas class="graf" id="cCurva" style="height:150px"></canvas>
+        <p class="nota" id="umbralNota"></p>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h2>Los incidentes del conjunto elegido, uno por uno <small>impacto = el tráfico cambió de forma observable en los detectores</small></h2>
+    <div class="tw"><table id="tablaInc"></table></div>
+  </div>
+</section>
+
+<section id="s-sil" hidden>
+  <div class="guia" data-g="sil"><div class="ico">i</div><p><b>Qué ves:</b> el mismo accidente simulado dos veces en SUMO. <b>Izquierda:</b> nadie avisa. <b>Derecha:</b> la IA lo detecta y envía un aviso V2X (DENM) a los autos conectados cercanos, que se desvían. <b>Prueba:</b> pulsa Reproducir y compara la cola roja y la tabla de resultados.</p><button class="x" aria-label="Ocultar ayuda">×</button></div>
+  <div class="card" style="margin-bottom:14px">
+    <h2>Qué pasa si la IA actúa <small id="silSub"></small></h2>
+    <p class="nota" id="silIntro" style="margin-top:0"></p>
+  </div>
+  <div class="duo">
+    <div class="card"><h2>Sin IA <span class="tag" style="background:rgba(154,166,184,.15);color:var(--base)">base</span></h2><div class="mini"><canvas id="cSilBase"></canvas></div></div>
+    <div class="card"><h2>Con IA + aviso V2X <span class="tag" style="background:rgba(42,212,196,.15);color:var(--ia)">DENM</span></h2><div class="mini"><canvas id="cSilIa"></canvas></div></div>
+  </div>
+  <div class="grid2" style="margin-top:14px">
+    <div class="col">
+      <div class="card"><h2>Cola aguas arriba del incidente <small>metros por carril, medido en SUMO</small></h2><canvas class="graf" id="cSilCola"></canvas></div>
+      <div class="card"><h2>Velocidad en el tramo afectado <small>km/h</small></h2><canvas class="graf" id="cSilVel"></canvas></div>
+    </div>
+    <div class="col">
+      <div class="card"><h2>Resultado de la corrida <small>mismo día, misma demanda, misma semilla</small></h2><div class="tw"><table id="tablaSil"></table></div></div>
+      <div class="card"><h2>Línea de tiempo <small>lo que vio y decidió el sistema</small></h2><div id="silEventos"></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="s-como" hidden>
+  <div class="guia" data-g="como"><div class="ico">i</div><p><b>Qué ves:</b> el recorrido completo, del simulador al aviso al conductor, en 5 pasos. <b>Prueba:</b> haz clic en cada paso para ver qué se hizo y su gráfico.</p><button class="x" aria-label="Ocultar ayuda">×</button></div>
+  <div class="flujo" id="flujo"></div>
+  <canvas id="cFlujo"></canvas>
+  <div class="detalle">
+    <div class="card" id="pasoDetalle"></div>
+    <div class="card"><h2 id="pasoGrafTit"></h2><canvas class="graf" id="cPaso" style="height:240px"></canvas><p class="nota" id="pasoGrafNota"></p></div>
+  </div>
+</section>
+
+<section id="s-pruebas" hidden>
+  <div class="guia" data-g="pruebas"><div class="ico">i</div><p><b>Qué ves:</b> la lista de verificaciones automáticas (pytest) que se corren sobre los resultados: que no haya trampas en los datos, que la IA gane a las referencias y que cumpla las metas del curso. <b>Verde</b> pasa, <b>rojo</b> no pasa: no se esconde nada.</p><button class="x" aria-label="Ocultar ayuda">×</button></div>
+  <div class="grid2">
+    <div class="card">
+      <h2>Banco de pruebas automático <small id="pruebasRes"></small></h2>
+      <div id="listaPruebas"></div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h2>¿Mejor que la referencia? <small>la IA frente a la forma simple de hacerlo sin IA</small></h2>
+        <div class="tw"><table id="tablaAud"></table></div>
+        <p class="nota" id="audNota"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const CSS=getComputedStyle(document.documentElement);
+const V=k=>CSS.getPropertyValue("--"+k).trim();
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let D=null, B={}, fuente="gt", seccion="inicio", capa="real";
+let t=8*60, playing=false, ultimo=0;            // t en minutos del dia
+const fmt=(x,n=1)=>x==null||isNaN(x)?"–":(+x).toLocaleString("es-EC",{minimumFractionDigits:n,maximumFractionDigits:n});
+const hhmm=m=>{m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,"0")+":"+String(Math.floor(m%60)).padStart(2,"0")};
+const VACIA="rgba(143,160,182,.2)";
+function colorRel(r){ // 0.2 atasco .. 1 libre
+  const s=[[0.2,[200,30,58]],[0.4,[255,106,61]],[0.6,[255,181,71]],[0.8,[215,227,106]],[1.0,[86,214,138]]];
+  r=Math.max(0.2,Math.min(1,r));
+  for(let i=1;i<s.length;i++)if(r<=s[i][0]){const u=(r-s[i-1][0])/(s[i][0]-s[i-1][0]),a=s[i-1][1],b=s[i][1];return `rgb(${a.map((v,k)=>Math.round(v+(b[k]-v)*u)).join(",")})`}
+  return "rgb(86,214,138)";
+}
+// error de la IA (km/h): gris si |e| < 2 (acierto), azul si predijo mas rapido, rojo si mas lento
+function colorErr(e){if(Math.abs(e)<2)return "rgba(143,160,182,.28)";const a=Math.min(1,(Math.abs(e)-2)/10);return e>0?`rgba(122,167,255,${.35+.65*a})`:`rgba(255,77,94,${.35+.65*a})`}
+// escala continua de probabilidad (no depende del umbral): azul bajo, turquesa, ambar, rojo alto
+const ESC_P=[[0,[42,74,100]],[0.3,[42,212,196]],[0.6,[255,181,71]],[1,[255,77,94]]];
+function gradP(p){p=Math.max(0,Math.min(1,p));for(let i=1;i<ESC_P.length;i++)if(p<=ESC_P[i][0]){const u=(p-ESC_P[i-1][0])/(ESC_P[i][0]-ESC_P[i-1][0]),a=ESC_P[i-1][1],b=ESC_P[i][1];return a.map((v,k)=>Math.round(v+(b[k]-v)*u))}return ESC_P[3][1]}
+function colorProb(p,u){const c=gradP(p);return `rgb(${c.join(",")})`}
+
+/* ---------------- carga ---------------- */
+async function bin(n){const r=await fetch(n);return new Uint8Array(await r.arrayBuffer())}
+async function cargar(){
+  D=await (await fetch("datos.json")).json();
+  const qd=+new URLSearchParams(location.search).get("dia");
+  if(qd&&qd!==D.meta.dia&&(D.dias||[]).some(f=>f.dia===qd))await aplicarDia(qd);
+  else for(const f of ["gt","obs"]){B["pred_"+f]=await bin(`pred_${f}.bin`);B["aid_"+f]=await bin(`aid_${f}.bin`)}
+  $("cargando").remove();
+  iniciar();
+}
+const N=()=>D.celdas.length;
+/* ---------------- dia simulado ---------------- */
+const SEM=["lunes","martes","miércoles","jueves","viernes","sábado","domingo"],SEM_AB=["L","M","X","J","V","S","D"];
+async function aplicarDia(d){
+  const j=await (await fetch(`dias/d${d}.json`)).json();
+  for(const f of ["gt","obs"]){B["pred_"+f]=await bin(`dias/d${d}_pred_${f}.bin`);B["aid_"+f]=await bin(`dias/d${d}_aid_${f}.bin`)}
+  Object.assign(D.meta,j.meta);D.serie_red=j.serie_red;D.incidentes=j.incidentes;D.v2x_corr=j.v2x_corr;D.ficha=j.ficha;
+  D.aid.edges=j.aid.edges;D.aid.celda_edges=j.aid.celda_edges;
+}
+async function cambiarDia(d){
+  if(d===D.meta.dia)return;
+  document.querySelectorAll("#selDia button").forEach(b=>b.disabled=true);
+  try{await aplicarDia(d)}finally{document.querySelectorAll("#selDia button").forEach(b=>b.disabled=false)}
+  const c=$("cAidMatriz");if(c)c._f=null;
+  pintarDias();refrescarPanel();render();
+}
+function carDia(f){ // que caracteriza al dia, en una frase
+  const r=[];
+  if(f.lluvia)r.push("Día de lluvia: en SUMO todos van más lento y lo habitual se equivoca; aquí se ve si la IA corrige.");
+  if(f.tipo==="sabado")r.push("Sábado: menos tráfico y sin el pico de la mañana.");
+  if(f.tipo==="domingo")r.push("Domingo: el día más tranquilo de la semana.");
+  if(f.demanda_pct>=3)r.push(`Más tráfico que un ${f.tipo==="laborable"?"laborable":"día"} típico (+${fmt(f.demanda_pct,1)} % de viajes).`);
+  if(f.demanda_pct<=-3)r.push(`Menos tráfico que lo típico (${fmt(f.demanda_pct,1)} % de viajes).`);
+  if(!f.incidentes)r.push("Sin incidentes: toda alarma del detector este día es falsa.");
+  if(!r.length)r.push("Laborable típico, con sus tres horas pico (08:00, 13:30 y 18:30).");
+  return r.join(" ");
+}
+function pintarDias(){
+  if(!D.dias)return;
+  const sd=$("selDia");
+  sd.innerHTML=D.dias.map(f=>`<button data-d="${f.dia}" class="${f.dia===D.meta.dia?"on":""}${f.lluvia?" lluvia":""}" title="${f.semana} ${f.dia}${f.lluvia?", con lluvia":""}">${SEM_AB[SEM.indexOf(f.semana)]}<small>${f.dia}</small></button>`).join("");
+  sd.querySelectorAll("button").forEach(b=>b.onclick=()=>cambiarDia(+b.dataset.d));
+  const f=D.ficha;if(!f)return;
+  $("diaTxt").textContent=`${f.semana[0].toUpperCase()+f.semana.slice(1)} ${f.dia}${f.lluvia?", con lluvia":""} · ${f.incidentes} incidente${f.incidentes===1?"":"s"}`;
+  const e=f.error_60&&f.error_60[fuente];
+  $("fichaDia").innerHTML=`<h2>El día simulado <small>día ${f.dia} de la semana de test</small></h2>
+   <div class="etq"><span>${f.semana}</span><span class="${f.lluvia?"az":""}">${f.lluvia?"con lluvia":"seco"}</span><span class="${Math.abs(f.demanda_pct)>=3?"am":""}">demanda ${f.demanda_pct>=0?"+":""}${fmt(f.demanda_pct,1)} %</span><span>${f.penetracion_v2x} % autos V2X</span></div>
+   <p class="que">${carDia(f)}</p>
+   <dl>${f.viajes?`<dt>Viajes completados</dt><dd>${fmt(f.viajes,0)}</dd>`:""}
+   <dt>Velocidad media de los viajes</dt><dd>${fmt(f.vel_viaje_kmh,1)} km/h</dd>
+   <dt>Demora media por viaje</dt><dd>${fmt(f.demora_media_s/60,1)} min</dd>
+   <dt>Celdas congestionadas en hora pico</dt><dd>${fmt(f.congestion_pico_pct,1)} %</dd>
+   <dt>Incidentes (en avenidas · con cola)</dt><dd>${f.incidentes} (${f.incidentes_avenidas} · ${f.incidentes_con_cola})</dd>
+   ${e?`<dt>Error a 1 h ese día: IA / habitual</dt><dd><b>${fmt(e.ia,2)}</b> / ${fmt(e.ha,2)} km/h</dd>`:""}</dl>`;
+}
+// pred: [288][N][7] = real, HA, p15, p30, p45, p60 (emitidas en ese paso, para t+15..t+60), hay autos (0/1)
+function pv(f,paso,i,k){return B["pred_"+f][(paso*N()+i)*7+k]}
+function aidp(f,e,m){const E=D.aid.edges[f].length;return B["aid_"+f][e*1440+m]/255}
+
+/* ---------------- tiempo global ---------------- */
+const lt=$("cTiempo"), lx=lt.getContext("2d");
+function dibTiempo(){
+  const w=lt.clientWidth,h=lt.clientHeight,d=devicePixelRatio||1;if(lt.width!==w*d){lt.width=w*d;lt.height=h*d}
+  lx.setTransform(d,0,0,d,0,0);lx.clearRect(0,0,w,h);
+  const X=m=>8+m/1440*(w-16);
+  // velocidad media de la red a lo largo del dia (fondo)
+  for(let i=0;i<288;i++){const r=D.serie_red.rel[i];lx.fillStyle=colorRel(r);lx.globalAlpha=.55;lx.fillRect(X(i*5),h-16,Math.max(1,(w-16)/288+.5),10)}
+  lx.globalAlpha=1;
+  lx.fillStyle=V("dim");lx.font="11px "+V("f-mono");
+  for(let hr=0;hr<24;hr+=3){lx.fillRect(X(hr*60),h-20,1,4);lx.fillText(String(hr).padStart(2,"0")+"h",X(hr*60)+3,12)}
+  if(seccion!=="sil")D.incidentes.forEach(c=>{const x=X(c.t_ini/60),x2=X(c.t_fin/60);lx.fillStyle=c.corredor?V("alerta"):V("aviso");lx.fillRect(x,h-26,Math.max(2,x2-x),5)});
+  if(D.sil&&seccion==="sil"){const a=D.sil.ventana_min;lx.strokeStyle=V("ia");lx.strokeRect(X(a[0]),h-30,X(a[1])-X(a[0]),27)}
+  const x=X(t);lx.fillStyle=V("fg");lx.fillRect(x-1,4,2,h-6);lx.beginPath();lx.arc(x,h-11,5,0,7);lx.fill();
+}
+function irA(m){t=Math.max(0,Math.min(1439,m));render()}
+let arrT=false;
+lt.addEventListener("pointerdown",e=>{arrT=true;lt.setPointerCapture(e.pointerId);mover(e)});
+lt.addEventListener("pointermove",e=>{if(arrT)mover(e)});lt.addEventListener("pointerup",()=>arrT=false);
+function mover(e){const r=lt.getBoundingClientRect();irA((e.clientX-r.left-8)/(r.width-16)*1440)}
+$("atras").onclick=()=>irA(t-15);$("adelante").onclick=()=>irA(t+15);
+$("play").onclick=()=>{playing=!playing;$("play").textContent=playing?"Pausa":"Reproducir";if(playing){ultimo=performance.now();requestAnimationFrame(bucle)}};
+function bucle(ahora){if(!playing)return;const dt=Math.min(.1,(ahora-ultimo)/1000);ultimo=ahora;t+=dt*(+$("vel").value);if(t>=1439){t=1439;playing=false;$("play").textContent="Reproducir"}render();if(playing)requestAnimationFrame(bucle)}
+document.addEventListener("keydown",e=>{if(e.code==="Space"&&!/INPUT|SELECT|BUTTON/.test(document.activeElement.tagName)){e.preventDefault();$("play").click()}});
+
+/* ---------------- mapa (canvas propio, coordenadas en metros) ---------------- */
+function Mapa(canvas,opts){
+  const ctx=canvas.getContext("2d");const m={canvas,ctx,cx:0,cy:0,s:.05,W:0,H:0,d:1,...opts};
+  m.ajustar=()=>{m.d=devicePixelRatio||1;m.W=canvas.clientWidth;m.H=canvas.clientHeight;canvas.width=m.W*m.d;canvas.height=m.H*m.d};
+  m.ver=(x0,y0,x1,y1)=>{m.ajustar();m.cx=(x0+x1)/2;m.cy=(y0+y1)/2;m.s=Math.min(m.W/(x1-x0),m.H/(y1-y0))*.94};
+  m.X=x=>m.W/2+(x-m.cx)*m.s;m.Y=y=>m.H/2-(y-m.cy)*m.s;
+  m.inv=(px,py)=>[m.cx+(px-m.W/2)/m.s,m.cy-(py-m.H/2)/m.s];
+  let arr=null;
+  canvas.addEventListener("pointerdown",e=>{arr={x:e.clientX,y:e.clientY,cx:m.cx,cy:m.cy,mov:false};canvas.setPointerCapture(e.pointerId)});
+  canvas.addEventListener("pointermove",e=>{if(!arr)return;const dx=e.clientX-arr.x,dy=e.clientY-arr.y;if(Math.abs(dx)+Math.abs(dy)>4)arr.mov=true;m.cx=arr.cx-dx/m.s;m.cy=arr.cy+dy/m.s;render()});
+  canvas.addEventListener("pointerup",e=>{if(arr&&!arr.mov&&m.click){const r=canvas.getBoundingClientRect();m.click(...m.inv(e.clientX-r.left,e.clientY-r.top))}arr=null});
+  canvas.addEventListener("wheel",e=>{e.preventDefault();const r=canvas.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;const [wx,wy]=m.inv(px,py);m.s*=Math.exp(-e.deltaY*.0015);m.s=Math.max(.01,Math.min(3,m.s));m.cx=wx-(px-m.W/2)/m.s;m.cy=wy+(py-m.H/2)/m.s;render()},{passive:false});
+  m.calles=(filtro,estilo)=>{
+    const c=D.calles;ctx.lineCap="round";ctx.lineJoin="round";
+    for(let k=0;k<c.t.length;k++){const tp=c.t[k];if(!filtro(tp))continue;const p=c.p[k];ctx.beginPath();ctx.moveTo(m.X(p[0]),m.Y(p[1]));for(let i=2;i<p.length;i+=2)ctx.lineTo(m.X(p[i]),m.Y(p[i+1]));estilo(tp);ctx.stroke()}
+  };
+  return m;
+}
+const ESTILO={0:["#1b2534",.6],1:["#2a3a52",1.1],2:["#33486a",1.6],3:["#3d5880",2.2],4:["#4a6a99",2.8]};
+function baseCalles(m,tenue){
+  m.ctx.setTransform(m.d,0,0,m.d,0,0);m.ctx.fillStyle="#070b10";m.ctx.fillRect(0,0,m.W,m.H);
+  m.calles(tp=>tp>0||m.s>.12,tp=>{const [c,w]=ESTILO[tp];m.ctx.strokeStyle=c;m.ctx.globalAlpha=tenue?.6:1;m.ctx.lineWidth=Math.max(.5,w*Math.min(2.5,m.s*12))});
+  m.ctx.globalAlpha=1;
+}
+
+/* ---------------- seccion ciudad ---------------- */
+let mapa, sel=null;
+function pasoDe(tt){return Math.max(0,Math.min(287,Math.floor(tt/5)))}
+function dibCiudad(){
+  const m=mapa,ctx=m.ctx;baseCalles(m,true);
+  const paso=pasoDe(t),u=(t/5)-paso,f=fuente;const cel=D.celdas,lado=200*m.s;
+  const pasoF=Math.min(287,paso+12);
+  ctx.globalAlpha=.78;
+  for(let i=0;i<cel.length;i++){
+    const c=cel[i],vff=c[2];let col;
+    const real=pv(f,paso,i,0)*(1-u)+pv(f,Math.min(287,paso+1),i,0)*u;
+    // celdas sin autos: no hay velocidad que medir ni que predecir (la IA no se entrena ni se evalua ahi) -> gris tenue
+    const vacia=capa==="real"?!pv(f,paso,i,6):!pv(f,pasoF,i,6);
+    if(vacia&&capa!=="error")col=VACIA;
+    else if(capa==="real")col=colorRel(real/vff);
+    else if(capa==="pred"){const p=pv(f,paso,i,5);if(!p)continue;col=colorRel(p/vff)}
+    else if(capa==="futuro")col=colorRel(pv(f,pasoF,i,0)/vff);
+    else {const p=pv(f,paso,i,5);if(!p||!pv(f,pasoF,i,6))continue;col=colorErr(p-pv(f,pasoF,i,0))}   // sin autos dentro de 1 h no hay velocidad real que comparar
+    ctx.fillStyle=col;ctx.fillRect(m.X(c[0]-100),m.Y(c[1]+100),lado+.6,lado+.6);
+  }
+  ctx.globalAlpha=1;
+  // corredores
+  m.ctx.lineCap="round";
+  D.corredores.forEach(co=>co.edges.forEach(e=>{const p=e.p;ctx.beginPath();ctx.moveTo(m.X(p[0]),m.Y(p[1]));for(let i=2;i<p.length;i+=2)ctx.lineTo(m.X(p[i]),m.Y(p[i+1]));ctx.strokeStyle="rgba(232,238,246,.55)";ctx.lineWidth=1.4;ctx.stroke()}));
+  // incidentes activos: pulso
+  D.incidentes.forEach(c=>{const ini=c.t_ini/60,fin=c.t_fin/60;if(t<ini||t>fin+10)return;const x=m.X(c.x),y=m.Y(c.y);const fase=RM?0:(performance.now()/900)%1;
+    ctx.beginPath();ctx.arc(x,y,8+fase*26,0,7);ctx.strokeStyle=`rgba(255,77,94,${1-fase})`;ctx.lineWidth=2;ctx.stroke();
+    ctx.beginPath();ctx.arc(x,y,5,0,7);ctx.fillStyle=t<=fin?V("alerta"):V("dim");ctx.fill()});
+  if(sel!=null){const c=cel[sel];ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.strokeRect(m.X(c[0]-100),m.Y(c[1]+100),lado,lado)}
+  // escala
+  const mts=[500,1000,2000,5000].find(v=>v*m.s>80)||5000;ctx.fillStyle=V("muted");ctx.fillRect(m.W-20-mts*m.s,m.H-18,mts*m.s,2);ctx.font="11px "+V("f-mono");ctx.fillText(mts>=1000?mts/1000+" km":mts+" m",m.W-20-mts*m.s,m.H-24);
+}
+function kpisCiudad(){
+  const f=fuente,paso=pasoDe(t),pasoF=Math.min(287,paso+12),cel=D.celdas;let sv=0,n=0,cong=0,e=0,eh=0,ne=0;
+  for(let i=0;i<cel.length;i++){const r=pv(f,paso,i,0),vff=cel[i][2];if(pv(f,paso,i,6)){sv+=r;n++;if(r<=.55*vff)cong++}
+    const p=pv(f,paso,i,5);if(p&&pv(f,pasoF,i,6)){const y=pv(f,pasoF,i,0);e+=Math.abs(p-y);eh+=Math.abs(pv(f,pasoF,i,1)-y);ne++}}
+  anim("kVel",n?sv/n:0,1);anim("kCong",cong,0);$("kErr").textContent=ne?fmt(e/ne,2):"–";$("kHa").textContent=ne?fmt(eh/ne,2):"–";
+  $("ciudadT").textContent=hhmm(t)+" · "+(D.meta.nombre_dia||D.meta.tipo);
+}
+const valAnim={};
+function anim(id,v,n){const a=valAnim[id]??v;const nv=RM?v:a+(v-a)*.25;valAnim[id]=nv;$(id).textContent=fmt(nv,n)}
+function grafCelda(){
+  const c=$("cCelda"),x=c.getContext("2d"),w=c.clientWidth,h=c.clientHeight,d=devicePixelRatio||1;if(c.width!==w*d){c.width=w*d;c.height=h*d}
+  x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,h);
+  if(sel==null){x.fillStyle=V("dim");x.font="13px "+V("f-body");x.fillText("Toca una celda del mapa para ver su día completo",10,h/2);return}
+  const f=fuente,vff=D.celdas[sel][2],pl=34,pr=8,pt=8,pb=20;const X=m=>pl+m/1440*(w-pl-pr),Y=v=>pt+(1-v/(vff*1.15))*(h-pt-pb);
+  x.font="10px "+V("f-mono");x.fillStyle=V("dim");x.strokeStyle=V("line");
+  [0,.5,1].forEach(r=>{const v=r*vff;x.beginPath();x.moveTo(pl,Y(v));x.lineTo(w-pr,Y(v));x.stroke();x.fillText(Math.round(v),4,Y(v)+3)});
+  for(let hr=0;hr<=24;hr+=6)x.fillText(hr+"h",X(hr*60)-6,h-5);
+  const linea=(k,col,wd,dash)=>{x.beginPath();for(let p=0;p<288;p++){const v=pv(f,p,sel,k);p?x.lineTo(X(p*5),Y(v)):x.moveTo(X(p*5),Y(v))}x.setLineDash(dash||[]);x.strokeStyle=col;x.lineWidth=wd;x.stroke();x.setLineDash([])};
+  linea(1,V("dim"),1.2,[4,4]);linea(0,V("fg"),1.6);
+  // abanico de la prediccion emitida ahora
+  const paso=pasoDe(t);x.beginPath();x.moveTo(X(paso*5),Y(pv(f,paso,sel,0)));
+  for(let k=0;k<4;k++){const p=pv(f,paso,sel,2+k);if(!p)continue;x.lineTo(X((paso+3*(k+1))*5),Y(p))}
+  x.strokeStyle=V("ia");x.lineWidth=2.5;x.stroke();
+  for(let k=0;k<4;k++){const p=pv(f,paso,sel,2+k);if(!p)continue;x.beginPath();x.arc(X((paso+3*(k+1))*5),Y(p),3,0,7);x.fillStyle=V("ia");x.fill()}
+  x.fillStyle="rgba(232,238,246,.08)";x.fillRect(X(paso*5),pt,X(60)-X(0),h-pt-pb);
+  x.fillStyle=V("fg");x.fillRect(X(t)-1,pt,2,h-pt-pb);
+  const p60=pv(f,paso,sel,5),y60=pv(f,Math.min(287,paso+12),sel,0);
+  $("celdaNota").innerHTML=`<b style="color:var(--fg)">Blanco</b>: velocidad real del día · <span style="color:var(--dim)">punteado</span>: lo habitual (promedio histórico) · <b style="color:var(--ia)">turquesa</b>: lo que la IA predice ahora para los próximos 15, 30, 45 y 60 min.`+(p60?` A las ${hhmm(t+60)} la IA dice <b>${p60} km/h</b> y será <b>${y60} km/h</b>.`:"");
+}
+function barrasPred(){
+  const r=D.metricas.pred[fuente].test,el=$("barrasPred");
+  const filas=[["Persistencia (todo sigue igual)",r.persistencia["+60min"],V("base")],["Promedio histórico",r.promedio_historico["+60min"],V("aviso")],["IA: GCN-GRU sobre el grafo vial",r.modelo["+60min"],V("ia")]];
+  const mx=Math.max(...filas.map(f=>f[1].RMSE));
+  el.innerHTML=filas.map(([n,m,c])=>`<div class="barra"><div class="t"><span>${n}</span><b>MAE ${fmt(m.MAE,2)} · RMSE ${fmt(m.RMSE,2)}</b></div><div class="r"><div style="width:0;background:${c}" data-w="${m.MAE/mx*100}"></div></div></div>`).join("");
+  requestAnimationFrame(()=>el.querySelectorAll(".r div").forEach(d=>d.style.width=d.dataset.w+"%"));
+  const mej=(1-r.modelo["+60min"].MAE/r.promedio_historico["+60min"].MAE)*100, pico=r.modelo.desglose_60min.hora_pico, ph=r.promedio_historico.desglose_60min.hora_pico;
+  $("notaPred").innerHTML=`Medido una sola vez sobre la semana de test (días 36–42). La IA baja el error del promedio histórico en <b>${fmt(mej,0)} %</b>; en hora pico ${fmt(ph.MAE,2)} → <b>${fmt(pico.MAE,2)} km/h</b>.`;
+}
+
+/* ---------------- seccion AID ---------------- */
+let mapaAid;
+function umbralAid(){return D.metricas.aid[fuente].seleccion_en_val.umbral}
+function dibAid(){
+  const m=mapaAid,ctx=m.ctx;baseCalles(m,true);const f=fuente,u=umbralAid(),mi=Math.floor(t);
+  const ed=D.aid.edges[f];ctx.lineCap="round";
+  ed.forEach((e,k)=>{const g=D.aid.geom[e];if(!g)return;const p=aidp(f,k,mi);ctx.beginPath();ctx.moveTo(m.X(g[0]),m.Y(g[1]));for(let i=2;i<g.length;i+=2)ctx.lineTo(m.X(g[i]),m.Y(g[i+1]));ctx.strokeStyle=colorProb(p,u);ctx.lineWidth=p>=u?6:3.5;ctx.stroke()});
+  D.incidentes.filter(c=>c.corredor).forEach(c=>{const ini=c.t_ini/60,fin=c.t_fin/60;if(t<ini-5||t>fin+5)return;const x=m.X(c.x),y=m.Y(c.y);const fase=RM?0:(performance.now()/800)%1;ctx.beginPath();ctx.arc(x,y,10+fase*30,0,7);ctx.strokeStyle=`rgba(255,77,94,${1-fase})`;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=V("alerta");ctx.beginPath();ctx.arc(x,y,5,0,7);ctx.fill()});
+  ctx.font="12px "+V("f-body");D.corredores.forEach(co=>{const p=co.etiqueta;ctx.fillStyle="rgba(11,16,23,.8)";const w=ctx.measureText(co.nombre).width+12;ctx.fillRect(m.X(p[0]),m.Y(p[1])-11,w,20);ctx.fillStyle=V("fg");ctx.fillText(co.nombre,m.X(p[0])+6,m.Y(p[1])+3)});
+}
+function matrizAid(){
+  const c=$("cAidMatriz"),x=c.getContext("2d"),w=c.clientWidth,h=c.clientHeight,d=devicePixelRatio||1;
+  const f=fuente,E=D.aid.edges[f].length,u=umbralAid();
+  if(c.width!==w*d||c._f!==f){c.width=w*d;c.height=h*d;c._f=f;
+    const img=x.createImageData(c.width,c.height);const W=c.width,H=c.height;
+    for(let py=0;py<H;py++){const e=Math.min(E-1,Math.floor(py/H*E));for(let px=0;px<W;px++){const mi=Math.floor(px/W*1440);const p=aidp(f,e,mi);const o=(py*W+px)*4;
+      const cc=p<0.05?[19,34,50]:gradP(p);img.data[o]=cc[0];img.data[o+1]=cc[1];img.data[o+2]=cc[2];img.data[o+3]=255}}
+    c._img=img}
+  x.setTransform(1,0,0,1,0,0);x.putImageData(c._img,0,0);x.setTransform(d,0,0,d,0,0);
+  D.incidentes.filter(i=>i.corredor).forEach(i=>{const k=D.aid.edges[f].indexOf(i.edge);const x0=i.t_ini/60/1440*w,x1=i.t_fin/60/1440*w;const y=k>=0?k/E*h:2;x.strokeStyle="#fff";x.lineWidth=1.5;x.strokeRect(x0-2,Math.max(0,y-6),x1-x0+4,12)});
+  x.fillStyle="#fff";x.fillRect(t/1440*w-1,0,2,h);
+}
+let conjAid="test";
+document.querySelectorAll("#segConj button").forEach(b=>b.onclick=()=>{conjAid=b.dataset.c;document.querySelectorAll("#segConj button").forEach(x=>x.classList.toggle("on",x===b));panelAid()});
+function conjunto(){const r=D.metricas.aid[fuente];return r[conjAid]||r.test}
+function panelAid(){
+  const r=D.metricas.aid[fuente],te=conjunto(),az=te.azar_misma_FAR;
+  $("aidFuente").textContent=fuente==="gt"?"detectores de lazo, todos los autos":"solo autos conectados V2X";
+  const ay=t=>` <span class="ayuda" data-t="${t}">?</span>`;
+  const k=[["Detecta (incidentes con impacto)"+ay("DR: de los accidentes que sí formaron cola, cuántos encontró la IA mientras duraban."),fmt(te.DR_con_impacto,0)+" %",`${te.por_incidente.filter(i=>i.impacto&&i.detectado).length} de ${te.incidentes_con_impacto}`],
+           ["Detecta (todos)",fmt(te.DR,0)+" %",`${te.detectados} de ${te.incidentes} · IC95 ${te.DR_IC95[0]}–${te.DR_IC95[1]} %`],
+           ["Falsas alarmas (FAR)"+ay("De cada 100 revisiones minuto a minuto en tramos sin accidente, cuántas veces la IA dio una alarma equivocada. Meta del curso: 3 a 5 %."),fmt(te.FAR,2)+" %",`≈ ${fmt(te.falsas_alarmas_por_dia,0)} minutos-tramo por día`],
+           ["Tiempo a detectar"+ay("MTTD: minutos desde que empieza el accidente hasta la primera alarma. Meta: menos de 5 min."),te.MTTD_con_impacto_min==null?"–":fmt(te.MTTD_con_impacto_min,1)+" min","incidentes con impacto"]];
+  $("aidKpis").innerHTML=k.map(([a,b,c])=>`<div class="kpi"><span>${a}</span><b>${b}</b><i>${c}</i></div>`).join("");
+  const sv=r.seleccion_en_val,dsel=sv.dias_seleccion||{};
+  const pc=te.por_clima||{};
+  $("aidClima").innerHTML=Object.entries(pc).map(([g,v])=>`<span class="pill ${v.FAR<=3?"ok":v.FAR<=5?"med":"mal"}">${g==="seco"?"Días secos":"Días con lluvia"}</span> detecta ${fmt(v.DR_con_impacto,0)} % de ${v.incidentes_con_impacto} con impacto · FAR ${fmt(v.FAR,2)} %`).join("<br>");
+  $("aidNota").innerHTML=`Umbral ${sv.umbral} (seco)${sv.umbral_lluvia!=null?` y ${sv.umbral_lluvia} (lluvia, el dato meteorológico se conoce en tiempo real)`:""}, con ${sv.persistencia} min seguidos. Se eligieron sin mirar el test: predicciones fuera de pliegue en ${(dsel.seco||0)+(dsel.lluvia||0)||"los"} días de entrenamiento y validación, con FAR ≤ ${sv.FAR_maxima??1} % (meta del curso: 3–5 %).${r.estricto_far1&&r.estricto_far1[conjAid]?` Con un punto más estricto (FAR ≤ 1 %): detecta ${fmt(r.estricto_far1[conjAid].DR_con_impacto,0)} % de los incidentes con impacto, FAR ${fmt(r.estricto_far1[conjAid].FAR,2)} %.`:""} Con lluvia SUMO forma colas en toda la red y las falsas alarmas suben. Un incidente <b>sin impacto</b> (1 carril de 3 con poca demanda) no cambia nada en los detectores: ningún método basado en tráfico puede verlo.`;
+  // azar
+  const c=$("cAzar"),x=c.getContext("2d"),w=c.clientWidth,h=c.clientHeight,d=devicePixelRatio||1;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0);
+  const filas=[["IA (este proyecto)",te.DR,te.DR_con_impacto,V("ia")],["Detector al azar",az.DR,az.DR_con_impacto,V("base")]];
+  const zip=null;
+  filas.forEach(([n,a,b,col],i)=>{const y=12+i*44;x.fillStyle=V("muted");x.font="12px "+V("f-body");x.fillText(n,0,y);x.fillStyle=V("panel2");x.fillRect(0,y+6,w-60,12);x.fillStyle=col;x.fillRect(0,y+6,(w-60)*a/100,12);if(b!=null){x.fillStyle=col;x.globalAlpha=.45;x.fillRect(0,y+20,(w-60)*b/100,6);x.globalAlpha=1}
+    x.fillStyle=V("fg");x.font="12px "+V("f-mono");x.fillText(fmt(a,0)+" %",w-54,y+17)});
+  $("azarNota").innerHTML=`Barra gruesa: todos los incidentes; fina: con impacto. Al azar, con la misma tasa de falsas alarmas (${fmt(az.FAR,2)} %), se acierta ${fmt(az.DR,0)} %.`+(zip&&fuente==="gt"?` *El zip reportaba 88 % con FAR ${fmt(zip.FAR,1)} % en el test real; con esa FAR el azar ya llega a ${fmt(zip.DR_azar,0)} %.`:"");
+  tablaInc();curvaUmbral();
+}
+function tablaInc(){
+  const te=conjunto();
+  $("tablaInc").innerHTML="<thead><tr><th>Incidente</th><th>Vía</th><th>Bloqueo</th><th class='n'>Duración</th><th>Impacto</th><th>Detectado</th><th class='n'>Tiempo</th></tr></thead><tbody>"+
+  te.por_incidente.map(i=>`<tr><td><code>${i.inc_id}</code></td><td>${i.via}</td><td>${i.severidad}</td><td class="n">${fmt(i.duracion_min,0)} min</td><td>${i.impacto?'<span class="pill med">observable</span>':'<span class="pill neu">sin firma</span>'}</td><td>${i.detectado?'<span class="pill ok">sí</span>':'<span class="pill mal">no</span>'}</td><td class="n">${i.ttd_min==null?"–":fmt(i.ttd_min,1)+" min"}</td></tr>`).join("")+"</tbody>";
+}
+function curvaUmbral(){
+  const cv=D.metricas.aid[fuente]["curva_"+conjAid]||D.metricas.aid[fuente].curva_test,c=$("cCurva"),x=c.getContext("2d"),w=c.clientWidth,h=c.clientHeight,d=devicePixelRatio||1;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0);
+  const pl=34,pb=18,X=v=>pl+v/Math.max(...cv.map(c=>c.FAR))*(w-pl-8),Y=v=>6+(1-v/100)*(h-24);
+  x.strokeStyle=V("line");x.fillStyle=V("dim");x.font="10px "+V("f-mono");[0,50,100].forEach(v=>{x.beginPath();x.moveTo(pl,Y(v));x.lineTo(w,Y(v));x.stroke();x.fillText(v+"%",2,Y(v)+3)});
+  x.fillText("FAR →",w-44,h-4);
+  const dib=(k,col)=>{x.beginPath();cv.forEach((c,i)=>{const px=X(c.FAR),py=Y(c[k]);i?x.lineTo(px,py):x.moveTo(px,py)});x.strokeStyle=col;x.lineWidth=2;x.stroke()};
+  dib("DR",V("ia"));dib("DR_con_impacto",V("aviso"));
+  const i=Math.round($("umbral").value/100*(cv.length-1)),c0=cv[i];x.fillStyle=V("fg");x.beginPath();x.arc(X(c0.FAR),Y(c0.DR),5,0,7);x.fill();
+  $("umbralNota").innerHTML=`Umbral <b>${c0.umbral}</b>: detecta <b>${fmt(c0.DR,0)} %</b> (con impacto ${fmt(c0.DR_con_impacto,0)} %) con FAR <b>${fmt(c0.FAR,2)} %</b> ≈ ${fmt(c0.falsas_alarmas_por_dia,0)} falsas alarmas al día. <span style="color:var(--ia)">Turquesa</span>: todos; <span style="color:var(--aviso)">ámbar</span>: con impacto.`;
+}
+$("umbral").addEventListener("input",curvaUmbral);
+const avisados=new Set();
+function avisosAid(){
+  const f=fuente,u=umbralAid(),mi=Math.floor(t),el=$("toastAid");
+  D.incidentes.filter(c=>c.corredor).forEach(c=>{
+    const k=D.aid.celda_edges[f][c.inc_id]||[];const on=k.some(e=>aidp(f,e,mi)>=u&&aidp(f,e,Math.max(0,mi-1))>=u);
+    const key=f+c.inc_id;if(on&&mi>=c.t_ini/60&&mi<=c.t_fin/60&&!avisados.has(key)){avisados.add(key);
+      const dv=document.createElement("div");dv.innerHTML=`<b>Alarma AID</b> · ${c.via}<br><span style="color:var(--muted)">${hhmm(mi)} · ${fmt(mi-c.t_ini/60,1)} min después del inicio</span>`;el.prepend(dv);setTimeout(()=>dv.remove(),6000)}});
+}
+
+/* ---------------- seccion SIL ---------------- */
+let silBase,silIa;
+function silSerie(r,m){const s=D.sil[r].serie;let best=s[0];for(const p of s){if(p.min<=m)best=p;else break}return best}
+function dibSil(mm,r){
+  const s=D.sil,ctx=mm.ctx;baseCalles(mm,false);
+  const p=silSerie(r,t),inc=s.geo;
+  // tramo aguas arriba coloreado por velocidad del tramo; cola dibujada hacia atras desde el incidente
+  ctx.lineCap="round";
+  inc.tramo.forEach(g=>{ctx.beginPath();ctx.moveTo(mm.X(g[0]),mm.Y(g[1]));for(let i=2;i<g.length;i+=2)ctx.lineTo(mm.X(g[i]),mm.Y(g[i+1]));ctx.strokeStyle=colorRel((p.vel_tramo_kmh||50)/inc.vff);ctx.lineWidth=7;ctx.stroke()});
+  const cola=p.cola_m_por_carril||0;let rest=cola;const pts=inc.cola_linea;ctx.beginPath();ctx.moveTo(mm.X(pts[0]),mm.Y(pts[1]));
+  for(let i=2;i<pts.length&&rest>0;i+=2){const dx=pts[i]-pts[i-2],dy=pts[i+1]-pts[i-1],L=Math.hypot(dx,dy);const u=Math.min(1,rest/L);ctx.lineTo(mm.X(pts[i-2]+dx*u),mm.Y(pts[i-1]+dy*u));rest-=L}
+  ctx.strokeStyle="#ff2d48";ctx.lineWidth=12;ctx.globalAlpha=.85;ctx.stroke();ctx.globalAlpha=1;
+  const activo=t>=s.incidente.t_ini_min&&t<=s.incidente.t_fin_min;
+  ctx.beginPath();ctx.arc(mm.X(inc.x),mm.Y(inc.y),7,0,7);ctx.fillStyle=activo?V("alerta"):V("dim");ctx.fill();
+  if(r==="ia"&&p.alarma_incidente&&!RM){const fase=(performance.now()/700)%1;for(let k=0;k<3;k++){const ff=(fase+k/3)%1;ctx.beginPath();ctx.arc(mm.X(inc.x),mm.Y(inc.y),20+ff*140*mm.s*10,0,7);ctx.strokeStyle=`rgba(122,167,255,${.7*(1-ff)})`;ctx.lineWidth=2;ctx.stroke()}}
+  ctx.font="600 15px "+V("f-disp");ctx.fillStyle=V("fg");
+  ctx.fillText(`Cola ${fmt(cola,0)} m · ${fmt(p.vel_tramo_kmh,0)} km/h · ${p.detenidos_tramo??0} autos detenidos`,12,22);
+  if(r==="ia"){const tot=D.sil.ia.serie.filter(q=>q.min<=t).reduce((a,q)=>a+q.avisos_denm,0);ctx.fillStyle=V("denm");ctx.fillText(`Avisos DENM enviados: ${tot}`,12,42)}
+  if(!activo){ctx.fillStyle=V("muted");ctx.font="13px "+V("f-body");ctx.fillText(t<s.incidente.t_ini_min?`El incidente empieza a las ${hhmm(s.incidente.t_ini_min)}`:"El incidente ya terminó",12,mm.H-14)}
+}
+function grafSil(id,clave,unidad){
+  const c=$(id),x=c.getContext("2d"),w=c.clientWidth,h=c.clientHeight,d=devicePixelRatio||1;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0);
+  const s=D.sil,a=s.ventana_min,pl=38,pb=18,X=m=>pl+(m-a[0])/(a[1]-a[0])*(w-pl-8);
+  const vals=[...s.base.serie,...s.ia.serie].map(p=>p[clave]||0),mx=Math.max(10,...vals)*1.1,Y=v=>6+(1-v/mx)*(h-pb-6);
+  x.fillStyle="rgba(255,77,94,.12)";x.fillRect(X(s.incidente.t_ini_min),6,X(s.incidente.t_fin_min)-X(s.incidente.t_ini_min),h-pb-6);
+  x.strokeStyle=V("line");x.fillStyle=V("dim");x.font="10px "+V("f-mono");[0,.5,1].forEach(r=>{x.beginPath();x.moveTo(pl,Y(mx*r/1.1));x.lineTo(w,Y(mx*r/1.1));x.stroke();x.fillText(Math.round(mx*r/1.1),2,Y(mx*r/1.1)+3)});
+  for(let m=Math.ceil(a[0]/30)*30;m<=a[1];m+=30)x.fillText(hhmm(m),X(m)-14,h-4);
+  [["base",V("base")],["ia",V("ia")]].forEach(([r,col])=>{x.beginPath();s[r].serie.forEach((p,i)=>{const px=X(p.min),py=Y(p[clave]||0);i?x.lineTo(px,py):x.moveTo(px,py)});x.strokeStyle=col;x.lineWidth=2;x.stroke()});
+  if(s.ia.alarma_min){x.strokeStyle=V("denm");x.setLineDash([4,4]);x.beginPath();x.moveTo(X(s.ia.alarma_min),6);x.lineTo(X(s.ia.alarma_min),h-pb);x.stroke();x.setLineDash([])}
+  x.fillStyle=V("fg");x.fillRect(X(Math.max(a[0],Math.min(a[1],t)))-1,6,2,h-pb-6);
+}
+function panelSil(){
+  const s=D.sil,b=s.base,i=s.ia,c=s.comparacion_pct;
+  $("silSub").textContent=`${s.incidente.via} · día ${s.incidente.dia} · ${s.incidente.carriles_bloqueados} de ${s.incidente.carriles_via} carriles · ${fmt(s.incidente.duracion_min,0)} min`;
+  $("silIntro").innerHTML=`Se repitió en <b>SUMO real</b> (TraCI) el incidente <code>${s.incidente.inc_id}</code> del test con la misma demanda y semilla. En ambas corridas el AID vigila los detectores minuto a minuto. En la de la derecha, cuando confirma la alarma se envía un <b>aviso V2X (DENM)</b> a los autos conectados que tienen la vía bloqueada en su ruta a menos de 2 km; cada uno recalcula su camino con el tráfico actual. Para actuar se usa el umbral más estricto (${s.punto_actuacion?s.punto_actuacion.seco:"–"}, falsas alarmas ≤ 1 %), el aviso caduca a los ${s.denm_caduca_min??3} min sin alarma y en los primeros ${s.calentamiento_min??30} min (red llenándose) no se actúa. Las falsas alarmas también generan avisos: ${s.ia.avisos_antes_del_incidente??0} de ${s.ia.autos_avisados_denm} fueron antes del incidente. Ningún número está escrito a mano: todo sale de SUMO.`;
+  const fila=(n,a,bb,u,dif,mejor)=>`<tr><td>${n}</td><td class="n">${a}</td><td class="n">${bb}</td><td class="n">${dif==null?"–":`<span class="pill ${(mejor?dif<0:dif>0)?"ok":"mal"}">${dif>0?"+":""}${fmt(dif,1)} %</span>`}</td></tr>`;
+  $("tablaSil").innerHTML="<thead><tr><th></th><th class='n'>Sin IA</th><th class='n'>Con IA</th><th class='n'>Cambio</th></tr></thead><tbody>"+
+    fila("Pérdida de tiempo media, autos afectados",fmt(b.afectados_perdida_media_s,0)+" s",fmt(i.afectados_perdida_media_s,0)+" s","",c.perdida_afectados,true)+
+    fila("Tiempo de viaje medio, autos afectados",fmt(b.afectados_tiempo_viaje_medio_s,0)+" s",fmt(i.afectados_tiempo_viaje_medio_s,0)+" s","",c.tiempo_viaje_afectados,true)+
+    fila("Cola máxima (m por carril)",fmt(b.cola_max_m_por_carril,0),fmt(i.cola_max_m_por_carril,0),"",c.cola_max,true)+
+    fila("Velocidad mínima del tramo",fmt(b.vel_tramo_min_kmh,1)+" km/h",fmt(i.vel_tramo_min_kmh,1)+" km/h","",null)+
+    fila("Pérdida media de toda la red",fmt(b.perdida_media_s,1)+" s",fmt(i.perdida_media_s,1)+" s","",c.perdida_media_red,true)+
+    fila("Viajes simulados",fmt(b.viajes,0),fmt(i.viajes,0),"",null)+
+    fila("Autos afectados (ruta por la vía)",fmt(b.afectados,0),fmt(i.afectados,0),"",null)+
+    fila("Detección en línea (MTTD)",b.mttd_min==null?"no":fmt(b.mttd_min,1)+" min",i.mttd_min==null?"no":fmt(i.mttd_min,1)+" min","",null)+
+    fila("Autos avisados por DENM","0",fmt(i.autos_avisados_denm,0),"",null)+"</tbody>";
+  const ev=[[s.ventana_min[0],"Empieza la simulación: la red se llena con la demanda del día"],[s.incidente.t_ini_min,`Incidente en ${s.incidente.via}: ${s.incidente.carriles_bloqueados} carril(es) bloqueado(s)`]];
+  if(i.alarma_min)ev.push([i.alarma_min,`El AID confirma la alarma (${fmt(i.mttd_min,1)} min) y sale el aviso DENM a ${fmt(i.autos_avisados_denm,0)} autos conectados`]);
+  ev.push([s.incidente.t_fin_min,"Se retira el vehículo accidentado"],[s.ventana_min[1],"Fin: se mide la recuperación"]);
+  $("silEventos").innerHTML=ev.sort((a,b)=>a[0]-b[0]).map(([m,txt])=>`<div class="test" style="grid-template-columns:62px 1fr;cursor:pointer" data-m="${m}"><b style="font-family:var(--f-mono);color:${m<=t?"var(--ia)":"var(--dim)"}">${hhmm(m)}</b><span>${txt}</span></div>`).join("");
+  $("silEventos").querySelectorAll("[data-m]").forEach(e=>e.onclick=()=>irA(+e.dataset.m));
+}
+
+/* ---------------- como funciona ---------------- */
+const PASOS=[
+ {t:"Simulación",d:"SUMO genera 46 días de tráfico de toda Cuenca con incidentes reales.",g:"red"},
+ {t:"Malla y sensores",d:"La ciudad se divide en 1.694 celdas de 200 m; los corredores tienen detectores por carril.",g:"malla"},
+ {t:"Predicción 1 h",d:"Un GCN-GRU mira la última hora y a los vecinos en el grafo de calles.",g:"pred"},
+ {t:"Detección AID",d:"Un clasificador compara cada tramo con lo habitual y con sus vecinos.",g:"aid"},
+ {t:"Aviso V2X",d:"Si hay alarma, un DENM avisa a los autos conectados que van hacia allá.",g:"sil"}];
+let pasoSel=2;
+function como(){
+  $("flujo").innerHTML=PASOS.map((p,i)=>`<div class="paso ${i===pasoSel?"on":""}" data-i="${i}"><div class="num">0${i+1}</div><h3>${p.t}</h3><p>${p.d}</p></div>`).join("");
+  $("flujo").querySelectorAll(".paso").forEach(e=>e.onclick=()=>{pasoSel=+e.dataset.i;como()});
+  const r=D.metricas,pr=r.pred[fuente],ai=r.aid[fuente];
+  const det=[
+   `<h2>La simulación de toda Cuenca</h2><p>La red urbana completa (15 parroquias, ${fmt(D.meta.aristas,0)} tramos) se simuló en <b>SUMO</b> con unos 200.000 viajes por día laborable y tres picos (08:00, 13:30 y 18:30). Se generaron <b>46 días</b>: 28 para entrenar, 7 para validar, 7 para el test y 4 de estrés (más demanda, lluvia y otra penetración V2X).</p><p>Hubo <b>154 incidentes</b> (autos detenidos en la vía de 10 a 25 min). Su inicio y fin reales salen del propio SUMO.</p>`,
+   `<h2>Malla y sensores</h2><p>Cada 5 minutos, cada celda de 200 × 200 m guarda velocidad, ocupación, densidad y flujo. Hay dos versiones de los mismos datos: <b>sensores</b> (ven a todos los autos, 0 % V2X) y <b>V2X</b> (solo el 50 % de autos conectados, como lo vería la red vehicular).</p><p>En los tres corredores (Av. de las Américas, Circunvalación Sur y Remigio Crespo – Solano) hay un detector por carril que mide cada minuto: eso alimenta al detector de incidentes.</p>`,
+   `<h2>Predicción a 1 hora</h2><p>El <b>promedio histórico</b> (misma hora, mismo tipo de día) ya explica el tráfico de rutina. La IA aprende la <b>corrección</b>: lo que la última hora y las celdas vecinas por la red de calles dicen que será distinto hoy (un incidente, lluvia, un día más cargado).</p><p>Arquitectura: una capa de grafo que mezcla cada celda con las de aguas arriba y aguas abajo, una <b>GRU</b> que lee los 12 pasos de 5 min y una salida para +15, +30, +45 y +60 min. ${fmt(pr.parametros,0)} parámetros.</p>`,
+   `<h2>Detección automática de incidentes</h2><p>Cada minuto y para cada tramo de corredor se calcula: velocidad y ocupación actuales, su cambio en 1, 3 y 5 min, el <b>desvío respecto a lo habitual</b> a esa hora, y la diferencia con el tramo de <b>aguas arriba</b> (donde se forma la cola) y <b>aguas abajo</b> (que queda vacío). Un Gradient Boosting da la probabilidad y la alarma exige ${ai.seleccion_en_val.persistencia} minutos seguidos sobre el umbral.</p><p>El umbral se fija sin mirar el test (predicciones fuera de pliegue más validación) para que la tasa de falsas alarmas no pase de 3 %, el extremo exigente de la meta del curso; con lluvia se usa un umbral propio.</p>`,
+   `<h2>Bucle cerrado con V2X</h2><p>En SUMO, con TraCI, el AID corre en línea con los detectores. Cuando confirma una alarma, se manda un <b>DENM</b> (mensaje de evento de ETSI) a los autos conectados que todavía tienen el tramo en su ruta, y cada uno recalcula su camino. Se compara contra la misma corrida sin avisos.</p>`];
+  $("pasoDetalle").innerHTML=det[pasoSel];
+  const tit=["Viajes completados por día","Correlación V2X frente a sensores","Error según el horizonte","Probabilidad de incidente, test","Cola con y sin IA"];
+  $("pasoGrafTit").textContent=tit[pasoSel];grafPaso();dibFlujo();
+}
+function dibFlujo(){
+  const c=$("cFlujo"),x=c.getContext("2d"),w=c.clientWidth,h=c.clientHeight,d=devicePixelRatio||1;if(!w)return;if(c.width!==w*d){c.width=w*d;c.height=h*d}
+  x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,h);const n=PASOS.length,cx=i=>w*(i+.5)/n,y=h/2;
+  x.strokeStyle=V("line2");x.lineWidth=2;x.beginPath();x.moveTo(cx(0),y);x.lineTo(cx(n-1),y);x.stroke();
+  const ahora=performance.now()/1000;
+  for(let k=0;k<26;k++){const u=((ahora*.12+k/26)%1);const px=cx(0)+u*(cx(n-1)-cx(0));const seg=Math.min(n-1,Math.floor(u*(n-1)));
+    x.beginPath();x.arc(px,y+Math.sin(k*1.7+ahora*2)*9,2.6,0,7);x.fillStyle=seg===pasoSel||seg+1===pasoSel?V("ia"):"rgba(143,160,182,.55)";x.fill()}
+  for(let i=0;i<n;i++){x.beginPath();x.arc(cx(i),y,i===pasoSel?11:7,0,7);x.fillStyle=i===pasoSel?V("ia"):V("panel2");x.fill();x.strokeStyle=i<=pasoSel?V("ia"):V("line2");x.lineWidth=2;x.stroke()}
+  x.fillStyle=V("muted");x.font="12px "+V("f-body");x.textAlign="center";
+  ["46 días · 154 incidentes","1.694 celdas · 310 tramos","t → t+60 min","cada minuto","DENM a autos V2X"].forEach((t,i)=>x.fillText(t,cx(i),y+30));x.textAlign="start";
+}
+function grafPaso(){
+  let w=$("cPaso").clientWidth;const c=$("cPaso"),x=c.getContext("2d"),h=c.clientHeight,d=devicePixelRatio||1;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0);
+  x.font="11px "+V("f-mono");x.fillStyle=V("dim");x.strokeStyle=V("line");const pl=40,pb=20;
+  const nota=$("pasoGrafNota");w-=36;
+  if(pasoSel===2){const r=D.metricas.pred[fuente].test,hz=["+15min","+30min","+45min","+60min"];
+    const ser=[["persistencia",V("base")],["promedio_historico",V("aviso")],["modelo",V("ia")]];const mx=Math.max(...ser.flatMap(([k])=>hz.map(z=>r[k][z].MAE)))*1.15;
+    const X=i=>pl+i/(hz.length-1)*(w-pl-20),Y=v=>8+(1-v/mx)*(h-pb-8);
+    [0,mx/2/1.15*1.15].forEach(v=>{x.beginPath();x.moveTo(pl,Y(v));x.lineTo(w,Y(v));x.stroke()});
+    hz.forEach((z,i)=>x.fillText(z,X(i)-18,h-4));
+    ser.forEach(([k,col])=>{x.beginPath();hz.forEach((z,i)=>{const v=r[k][z].MAE;i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v))});x.strokeStyle=col;x.lineWidth=2.5;x.stroke();hz.forEach((z,i)=>{x.beginPath();x.arc(X(i),Y(r[k][z].MAE),3.5,0,7);x.fillStyle=col;x.fill()});x.fillText(fmt(r[k]["+60min"].MAE,2),X(3)+6,Y(r[k]["+60min"].MAE)+4)});
+    nota.innerHTML=`MAE en km/h sobre el test. <span style="color:var(--base)">Gris</span>: persistencia; <span style="color:var(--aviso)">ámbar</span>: promedio histórico; <span style="color:var(--ia)">turquesa</span>: IA. Cuanto más lejos, más útil es lo aprendido.`;return}
+  if(pasoSel===4&&D.sil){grafSil("cPaso","cola_m_por_carril");nota.textContent="Metros de cola por carril en SUMO: gris sin IA, turquesa con aviso V2X.";return}
+  if(pasoSel===3){const cv=D.metricas.aid[fuente].curva_test;const X=v=>pl+v/Math.max(...cv.map(c=>c.FAR))*(w-pl-10),Y=v=>8+(1-v/100)*(h-pb-8);
+    x.beginPath();cv.forEach((c,i)=>i?x.lineTo(X(c.FAR),Y(c.DR)):x.moveTo(X(c.FAR),Y(c.DR)));x.strokeStyle=V("ia");x.lineWidth=2.5;x.stroke();
+    x.beginPath();cv.forEach((c,i)=>i?x.lineTo(X(c.FAR),Y(c.DR_con_impacto)):x.moveTo(X(c.FAR),Y(c.DR_con_impacto)));x.strokeStyle=V("aviso");x.stroke();
+    x.fillText("FAR (%) →",w-70,h-4);x.fillText("DR %",2,14);nota.textContent="Curva DR–FAR en el test: más alarmas detectan más, pero también se equivocan más.";return}
+  const s=pasoSel===0?D.dias_viajes:D.v2x_corr;const mx=Math.max(...s.map(v=>v[1]))*1.1,X=i=>pl+i/(s.length-1)*(w-pl-10),Y=v=>8+(1-v/mx)*(h-pb-8);
+  s.forEach((v,i)=>{x.fillStyle=v[2]||V("ia");x.fillRect(X(i)-((w-pl)/s.length)*.35,Y(v[1]),((w-pl)/s.length)*.7,h-pb-Y(v[1]))});
+  x.fillStyle=V("dim");s.forEach((v,i)=>{if(i%Math.ceil(s.length/12)===0)x.fillText(v[0],X(i)-8,h-4)});
+  nota.textContent=pasoSel===0?"Miles de viajes completados por día; turquesa = train, ámbar = val, rojo = test, gris = estrés.":"Correlación de la velocidad por celda entre la vista V2X y los sensores, por hora del día.";
+}
+
+/* ---------------- banco de pruebas ---------------- */
+function pruebas(){
+  const p=D.pruebas;if(!p){$("listaPruebas").textContent="Corre: python -m pytest pruebas/ para generar el informe.";return}
+  const ok=p.casos.filter(c=>c.estado==="ok").length;
+  $("pruebasRes").textContent=`${ok} de ${p.casos.length} pasan · ${p.fecha}`;
+  $("listaPruebas").innerHTML=p.casos.map(c=>`<div class="test"><div class="ic ${c.estado==="ok"?"ok":c.estado==="aviso"?"av":"mal"}">${c.estado==="ok"?"✓":c.estado==="aviso"?"!":"✗"}</div><div>${c.titulo}<small>${c.detalle||""}</small></div><span class="pill neu">${c.grupo}</span></div>`).join("");
+  const a=D.metricas.auditoria_tabla||[];
+  $("tablaAud").innerHTML="<thead><tr><th>Qué</th><th class='n'>Referencia</th><th class='n'>IA</th><th></th></tr></thead><tbody>"+a.map(r=>`<tr><td>${r[0]}</td><td class="n">${r[1]}</td><td class="n">${r[2]}</td><td><span class="pill ${r[3]}">${r[4]}</span></td></tr>`).join("")+"</tbody>";
+  $("audNota").innerHTML=D.metricas.auditoria_nota||"";
+}
+
+/* ---------------- inicio ---------------- */
+function inicio(){
+  const pm=D.metricas.pred[fuente].test,mae=pm.modelo["+60min"].MAE,ha=pm.promedio_historico["+60min"].MAE;
+  const ai=D.metricas.aid[fuente],ti=ai.test_incidentes||ai.test,s=D.sil;
+  const tarj=[["01","Predecir",`${fmt(mae,1)}<small>km/h de error</small>`,`Pronóstico de la velocidad de las 1.694 celdas de la ciudad <b>con 1 hora de anticipación</b>. Lo simple (repetir lo habitual) se equivoca ${fmt(ha,1)} km/h: la IA reduce el error ${fmt(100*(1-mae/ha),0)} %.`,"ciudad"],
+    ["02","Detectar",`${fmt(ti.DR_con_impacto,0)}<small>% detectados</small>`,`En los días de prueba con accidentes, de los que forman cola en las tres avenidas la IA encuentra ${fmt(ti.DR_con_impacto,0)} % en ${fmt(ti.MTTD_con_impacto_min,1)} min en promedio. Adivinando al azar, con las mismas falsas alarmas, se encontraría ${fmt(ti.azar_misma_FAR.DR_con_impacto,0)} %.`,"aid"],
+    ["03","Avisar",s?`${fmt(-s.comparacion_pct.perdida_afectados,0)}<small>% menos demora</small>`:"–",s?`En SUMO, con la IA avisando por V2X, los autos que iban hacia el accidente pierden ${fmt(-s.comparacion_pct.perdida_afectados,0)} % menos tiempo y toda la red mejora ${fmt(-s.comparacion_pct.perdida_media_red,0)} %.`:"Falta correr el SIL.","sil"]];
+  $("tresRes").innerHTML=tarj.map(([n,h,c,p,sec])=>`<div class="res"><span class="n">${n}</span><h3>${h}</h3><div class="cifra">${c}</div><p>${p}</p><button class="ir" data-ir="${sec}">Ver en el mapa →</button></div>`).join("");
+  $("tresRes").querySelectorAll("[data-ir]").forEach(b=>b.onclick=()=>document.querySelector(`nav button[data-s="${b.dataset.ir}"]`).click());
+  const G=[["Celda","Cuadrado de 200 × 200 m en que se divide la ciudad para predecir."],["Promedio histórico","Lo que suele pasar ese tipo de día a esa hora; es la referencia a superar."],["V2X","Comunicación del auto con otros autos y con la infraestructura."],["Penetración","Porcentaje de autos conectados. Aquí 50 %."],["AID","Detección Automática de Incidentes: la IA que busca accidentes."],["DR","Tasa de detección: accidentes encontrados sobre accidentes reales."],["FAR","Tasa de falsas alarmas por minuto y tramo sin accidente."],["MTTD","Tiempo medio desde que ocurre el accidente hasta la alarma."],["DENM","Mensaje V2X estándar (ETSI) que avisa de un peligro en la vía."],["SIL","Simulación en bucle cerrado: la IA corre dentro de SUMO y sus avisos cambian el tráfico."],["GCN-GRU","Red neuronal que mira el mapa de calles (grafo) y la historia reciente (memoria)."],["SUMO","Simulador de tráfico de código abierto usado para generar todos los datos."]];
+  $("glosario").innerHTML=G.map(([a,b])=>`<div><b>${a}</b>${b}</div>`).join("");
+}
+
+/* ---------------- navegacion y render ---------------- */
+const TITULOS={inicio:["Inicio","Qué es este tablero y cómo leerlo"],ciudad:["Ciudad en vivo","Velocidad real y predicción a 1 hora en las 1.694 celdas de Cuenca"],aid:["Detector de incidentes","Corredores C1, C2 y C3, minuto a minuto"],sil:["Bucle cerrado en SUMO","El mismo incidente, con y sin aviso V2X"],como:["Cómo funciona","Del simulador al aviso al conductor"],pruebas:["Banco de pruebas","Lo que se verifica automáticamente"]};
+document.querySelectorAll("nav button[data-s]").forEach(b=>b.onclick=()=>{seccion=b.dataset.s;try{history.replaceState(null,"","#"+seccion)}catch(e){}document.querySelectorAll("nav button[data-s]").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll("section").forEach(s=>s.hidden=s.id!=="s-"+seccion);document.body.classList.toggle("sin-reloj",["inicio","como","pruebas"].includes(seccion));$("titulo").textContent=TITULOS[seccion][0];$("subtitulo").textContent=TITULOS[seccion][1];
+  if(seccion==="sil"&&D.sil&&(t<D.sil.ventana_min[0]||t>D.sil.ventana_min[1]))t=D.sil.incidente.t_ini_min-10;
+  requestAnimationFrame(()=>{prepararMapas();refrescarPanel();render()})});
+document.querySelectorAll('.seg[aria-label="Fuente de datos"] button').forEach(b=>b.onclick=()=>{fuente=b.dataset.f;document.querySelectorAll('.seg[aria-label="Fuente de datos"] button').forEach(x=>x.classList.toggle("on",x===b));$("fuenteTxt").textContent=fuente==="gt"?"Detectores que ven a todos los autos (0 % V2X).":"Solo el 50 % de autos conectados (V2X).";refrescarPanel();render()});
+document.querySelectorAll(".capas .chip").forEach(c=>c.onclick=()=>{capa=c.dataset.c;document.querySelectorAll(".capas .chip").forEach(x=>x.classList.toggle("on",x===c));const ley=$("leyendaCiudad"),esc=ley.querySelector(".escala"),et=esc.nextElementSibling;
+  if(capa==="error"){$("leyTit").textContent="Error de la IA a 1 h (solo celdas con autos)";esc.style.background="linear-gradient(90deg,#ff4d5e,#ff4d5e 30%,#5b6676 42%,#5b6676 58%,#7aa7ff 70%,#7aa7ff)";et.innerHTML="<span>más lenta</span><span>±2 km/h</span><span>más rápida</span>";$("leySin").style.display="none"}
+  else{$("leyTit").textContent="Velocidad / velocidad libre";esc.style.background="";et.innerHTML="<span>0,2 atasco</span><span>0,6</span><span>1,0 libre</span>";$("leySin").style.display=""}
+  render()});
+function prepararMapas(){
+  const bb=D.bbox;
+  if(seccion==="ciudad"){if(!mapa){mapa=Mapa($("cMapa"),{click:(x,y)=>{let b=null,bd=1e9;D.celdas.forEach((c,i)=>{const dd=Math.hypot(c[0]-x,c[1]-y);if(dd<bd){bd=dd;b=i}});sel=bd<300?b:null;$("celdaTxt").textContent=sel==null?"toca una celda del mapa":`celda ${D.celdas[sel][4]} · v libre ${D.celdas[sel][2]} km/h`;render()}});mapa.ver(bb[0]+2500,bb[1]+1500,bb[2]-2500,bb[3]-1000)}else mapa.ajustar()}
+  if(seccion==="aid"){if(!mapaAid){mapaAid=Mapa($("cMapaAid"),{});const g=D.aid.bbox;mapaAid.ver(g[0],g[1],g[2],g[3])}else mapaAid.ajustar()}
+  if(seccion==="sil"&&D.sil){const g=D.sil.geo.bbox;if(!silBase){silBase=Mapa($("cSilBase"),{});silIa=Mapa($("cSilIa"),{});silBase.ver(...g);silIa.ver(...g)}else{silBase.ajustar();silIa.ajustar()}}
+}
+function refrescarPanel(){if(seccion==="inicio")inicio();if(seccion==="ciudad")barrasPred();if(seccion==="aid")panelAid();if(seccion==="sil"&&D.sil)panelSil();if(seccion==="como")como();if(seccion==="pruebas")pruebas()}
+function render(){
+  {const bd=$("bloqueDia");if(bd){const act=seccion==="ciudad"||seccion==="aid";bd.classList.toggle("inactivo",!act);if(!act&&D.ficha)$("diaTxt").textContent=seccion==="sil"&&D.sil?`El SUMO en bucle cerrado usa siempre el día ${D.sil.incidente.dia} (${D.meta.nombre_dia_sil}).`:"Cambia la ciudad y el detector.";else if(D.ficha&&act)$("diaTxt").textContent=`${D.ficha.semana[0].toUpperCase()+D.ficha.semana.slice(1)} ${D.ficha.dia}${D.ficha.lluvia?", con lluvia":""} · ${D.ficha.incidentes} incidente${D.ficha.incidentes===1?"":"s"}`}}
+  $("hora").innerHTML=hhmm(t)+(seccion==="sil"&&D.sil?`<small>simulación SUMO · ${D.meta.nombre_dia_sil||""} · día ${D.sil.incidente.dia}</small>`:`<small>${D.meta.nombre_dia||D.meta.tipo} · día ${D.meta.dia}</small>`);dibTiempo();
+  if(seccion==="ciudad"){dibCiudad();kpisCiudad();grafCelda()}
+  if(seccion==="aid"){dibAid();matrizAid();avisosAid()}
+  if(seccion==="sil"&&D.sil){dibSil(silBase,"base");dibSil(silIa,"ia");grafSil("cSilCola","cola_m_por_carril");grafSil("cSilVel","vel_tramo_kmh");
+    $("silEventos").querySelectorAll("[data-m]").forEach(e=>e.firstChild.style.color=(+e.dataset.m<=t)?"var(--ia)":"var(--dim)")}
+}
+function latido(){if(!playing&&(seccion==="ciudad"||seccion==="aid"||seccion==="sil"))render();if(seccion==="como"&&!RM)dibFlujo();setTimeout(()=>requestAnimationFrame(latido),RM?2000:60)}
+function iniciar(){
+  $("subtitulo").textContent=TITULOS.inicio[1];$("titulo").textContent=TITULOS.inicio[0];document.body.classList.add("sin-reloj");
+  document.querySelectorAll(".guia").forEach(g=>{let oc=false;try{oc=localStorage.getItem("guia_"+g.dataset.g)==="0"}catch(e){}if(oc)g.remove();else g.querySelector(".x").onclick=()=>{g.remove();try{localStorage.setItem("guia_"+g.dataset.g,"0")}catch(e){}}});$("fuenteTxt").textContent="Detectores que ven a todos los autos (0 % V2X).";
+  if(D.sil)t=D.sil.incidente.t_ini_min-25;
+  pintarDias();prepararMapas();refrescarPanel();render();if(!new URLSearchParams(location.search).has("captura"))latido();
+  const tc=new URLSearchParams(location.search).has("captura")?document.createElement("div"):$("toastCiudad"),dv=document.createElement("div");dv.className="info";dv.innerHTML=`<b>Día ${D.meta.dia} del test</b> · ${D.meta.tipo}${D.meta.lluvia?" con lluvia":""}. Pulsa Reproducir o arrastra la línea de tiempo.`;tc.appendChild(dv);setTimeout(()=>dv.remove(),7000);
+  new ResizeObserver(()=>{prepararMapas();render()}).observe(document.querySelector(".vista"));
+  const h=location.hash.slice(1);const b=document.querySelector(`nav button[data-s="${h}"]`);if(b)b.click();
+  // vistas exactas por URL: ?t=14:20&capa=pred&fuente=obs&conj=test_incidentes&paso=3#sil
+  const q=new URLSearchParams(location.search);
+  prepararMapas();
+  if(q.get("fuente")){const fb=document.querySelector(`.seg[aria-label="Fuente de datos"] button[data-f="${q.get("fuente")}"]`);if(fb)fb.click()}
+  if(q.get("capa")){const cb=document.querySelector(`.capas .chip[data-c="${q.get("capa")}"]`);if(cb)cb.click()}
+  if(q.get("conj")){const kb=document.querySelector(`#segConj button[data-c="${q.get("conj")}"]`);if(kb)kb.click()}
+  if(q.get("celda")){const v=+q.get("celda");let k=D.celdas.findIndex(c=>c[4]===v);if(k<0&&Number.isInteger(v)&&v>=0&&v<D.celdas.length)k=v;if(k>=0){sel=k;$("celdaTxt").textContent=`celda ${D.celdas[sel][4]} · v libre ${D.celdas[sel][2]} km/h`}}   // acepta el numero de celda que muestra el tablero
+  if(q.get("t")){const [hh,mm]=q.get("t").split(":").map(Number);t=hh*60+(mm||0)}
+  if(q.get("paso")){const pb=document.querySelectorAll("#flujo .paso")[+q.get("paso")];if(pb)pb.click()}
+  if(q.get("singuia")!=null)document.querySelectorAll(".guia").forEach(g=>g.remove());
+  refrescarPanel();render();
+  addEventListener("hashchange",()=>{const b=document.querySelector(`nav button[data-s="${location.hash.slice(1)}"]`);if(b)b.click()});
+}
+cargar().catch(e=>{const c=$("cargando")||document.body.appendChild(Object.assign(document.createElement("pre"),{id:"cargando"}));c.textContent="No se pudieron cargar los datos: abre el dashboard con  python servir_dashboard.py";console.error(e.stack||e)});
+</script>
+</body>
+</html>

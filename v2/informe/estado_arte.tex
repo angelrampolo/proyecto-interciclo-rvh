@@ -1,0 +1,46 @@
+Revisamos siete trabajos recientes en tres líneas: predicción con redes de grafos, detección automática de incidentes y avisos V2X evaluados en simulación. La Tabla~\ref{tab:arte} los compara con nuestra propuesta.
+
+\textbf{Predicción espaciotemporal con grafos.} T-GCN~\cite{zhao2020tgcn} combina una convolución de grafo con una GRU para predecir la velocidad en carreteras urbanas de Shenzhen y en autopistas de Los Ángeles. Es la base de nuestra arquitectura.
+\begin{itemize}
+\item \textbf{Graph WaveNet}~\cite{wu2019graphwavenet}: parte de que el grafo dado puede no reflejar las dependencias reales entre sensores. Aprende una matriz de adyacencia adaptativa y la combina con convoluciones temporales dilatadas. En METR-LA y PEMS-BAY, con autopistas y lazos reales, obtiene a 60~min un MAE de 3,53 y 1,95~mph.
+\item \textbf{GMAN}~\cite{zheng2020gman}: ataca la degradación de la predicción a 1~h con un codificador-decodificador de atención espacial y temporal. Alcanza un MAE de 1,86~mph a 60~min en PeMS-BAY, frente a 3,38~mph de ARIMA.
+\item \textbf{Revisión de Jiang y Luo}~\cite{jiang2022gnnsurvey}: ordena más de un centenar de trabajos de GNN para tráfico y muestra que casi todos los benchmarks son autopistas de EE.~UU. y China.
+\end{itemize}
+Estos modelos predicen la velocidad absoluta con datos reales y no actúan sobre el tráfico. Nosotros predecimos la corrección sobre el promedio histórico en una red urbana sintética, con datos V2X parciales, y usamos la predicción dentro de un lazo. Sus errores están en mph y sobre otras redes, así que no son comparables con nuestros km/h.
+
+\textbf{Detección automática de incidentes.}
+\begin{itemize}
+\item \textbf{Sun et al.}~\cite{sun2022weakaid}: notan que las etiquetas de incidentes de PeMS tienen errores de hora y lugar, y las limpian con supervisión débil antes de entrenar bosques aleatorios, SVM y LSTM. En la I-80 logran DR~0,90 y FAR~0,08, pero su FAR es la fracción de alarmas que son falsas, no la fracción de intervalos sin incidente que tienen alarma, como en nuestro caso.
+\item \textbf{Parsa et al.}~\cite{parsa2020xgboost}: usan XGBoost, la misma familia que nuestro clasificador, con variables de tráfico, red y clima, y SHAP para interpretarlo. En autopistas de Chicago reportan DR~79~\% y FAR~0,16~\%.
+\end{itemize}
+Ninguno de los dos compara contra un detector al azar con la misma tasa de alarmas, ni trabaja en arterias urbanas con firma aguas arriba y aguas abajo, contexto de red y lluvia. Las cifras de AID dependen mucho de cómo se define la FAR, y por eso damos la nuestra de forma explícita.
+
+\textbf{Avisos V2X evaluados en SUMO.}
+\begin{itemize}
+\item \textbf{Porfyri et al.}~\cite{porfyri2019rhw}: evalúan un aviso de peligro V2I en SUMO con TraCI sobre una autopista de 5~km y penetraciones de 0 a 100~\%. Los vehículos avisados reducen su velocidad y amplían su distancia, lo que baja los choques simulados. El incidente se conoce de antemano y no hay cambio de ruta.
+\item \textbf{ms-van3t}~\cite{raviglione2024msvan3t}: integra la pila ETSI completa (CAM, DENM) sobre ns-3 acoplado a SUMO para validar servicios V2X con varias tecnologías de acceso. Es la base de VaN3Twin~\cite{pegurri2026van3twin}, la plataforma del curso.
+\end{itemize}
+Ninguno acopla un detector automático ni mide el beneficio de un cambio de ruta disparado por DENM en una red urbana. Nuestro DENM se emula a nivel de aplicación con TraCI, con comunicación ideal; acoplarlo a la pila de radio de ms-van3t queda como trabajo futuro.
+
+\begin{table*}[t]
+\centering
+\caption{Comparación de los trabajos revisados con la propuesta}
+\label{tab:arte}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}L{1.75cm}L{2.6cm}L{2.7cm}L{2.3cm}L{2.6cm}L{1.05cm}L{3.4cm}@{}}
+\toprule
+Trabajo & Problema & Método & Datos & Resultado & Actúa & Diferencia con este trabajo \\
+\midrule
+Wu et al. 2019~\cite{wu2019graphwavenet} & Predecir velocidad con grafo incompleto & Adyacencia adaptativa + convolución temporal dilatada & METR-LA, PEMS-BAY (autopistas reales) & MAE 60 min: 3,53 / 1,95 mph & No & Velocidad absoluta; no usa datos V2X parciales ni lazo cerrado \\
+Zheng et al. 2020~\cite{zheng2020gman} & Predicción a largo plazo (1 h) & Atención espacial y temporal, codificador-decodificador & PeMS-BAY, Xiamen & MAE 60 min: 1,86 mph (ARIMA 3,38) & No & Modelo grande; sin lluvia ni incidentes; no actúa \\
+Jiang y Luo 2022~\cite{jiang2022gnnsurvey} & Ordenar la literatura de GNN para tráfico & Revisión sistemática & Más de 100 trabajos & Taxonomía; benchmarks casi solo de autopistas & No & Casi no hay redes urbanas latinoamericanas ni V2X \\
+Sun et al. 2022~\cite{sun2022weakaid} & Etiquetas de incidentes ruidosas & Supervisión débil + RF, SVM, LSTM & PeMS I-80 (real) & DR 0,90; FAR 0,08 (fracción de alarmas) & No & FAR con otra definición; sin comparar con azar; autopista \\
+Parsa et al. 2020~\cite{parsa2020xgboost} & Detectar accidentes en tiempo real & XGBoost + SHAP & Autopistas de Chicago (real) & DR 79 \%; FAR 0,16 \% & No & Sin comparar con azar; casos negativos muestreados; autopista \\
+Porfyri et al. 2019~\cite{porfyri2019rhw} & Impacto de un aviso de peligro V2I & SUMO + TraCI, ajuste de velocidad y distancia & Autopista sintética de 5 km & Menos choques al subir la penetración & Sí & Incidente conocido; sin detector ni cambio de ruta \\
+Raviglione et al. 2024~\cite{raviglione2024msvan3t} & Validar servicios V2X sin pruebas de campo & ns-3 + SUMO con pila ETSI (CAM, DENM) & Escenarios SUMO & Interoperabilidad de la pila ETSI & Herram. & Sin predictor, sin AID y sin medir beneficio de tráfico \\
+\midrule
+\textbf{Este trabajo} & Prever, detectar y avisar en una ciudad & GCN-GRU residual + gradient boosting + DENM en bucle cerrado & Gemelo de Cuenca, sintético, 66 días & MAE 1,82 km/h; DR 90 \% (azar 14 \%); −27,8 \% demora & Sí & Lazo completo con líneas base justas; datos sintéticos \\
+\bottomrule
+\end{tabular}
+\end{table*}

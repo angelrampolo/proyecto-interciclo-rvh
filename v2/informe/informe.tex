@@ -1,0 +1,203 @@
+\documentclass[conference,a4paper]{IEEEtran}
+\usepackage{fontspec}
+\setmainfont{Liberation Serif}
+\setsansfont{Carlito}
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+\usepackage[spanish,es-tabla,es-nodecimaldot]{babel}
+\usepackage{graphicx,booktabs,array,xcolor,tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage{cite}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\input{pruebas.tex}
+\newcommand{\Repo}{https://github.com/angelrampolo/proyecto-interciclo-rvh}
+\newcommand{\Tag}{v1.0-entrega}
+\newcommand{\sint}{\textit{(datos sintéticos, SUMO)}}
+\graphicspath{{figuras/}}
+\definecolor{ia}{HTML}{0F8F7F}
+\definecolor{mal}{HTML}{C0392B}
+\newcommand{\ok}{\textcolor{ia}{\textbf{cumple}}}
+\newcommand{\no}{\textcolor{mal}{\textbf{no cumple}}}
+
+\begin{document}
+
+\title{Centro de tráfico predictivo para Cuenca: predicción de velocidad a una hora, detección automática de incidentes y aviso V2X validado en bucle cerrado con SUMO}
+
+\author{\IEEEauthorblockN{Angel Apolo, Fernando Terán, Stalyn Ochoa y Karla Barrera}
+\IEEEauthorblockA{Facultad de Ingeniería, Universidad de Cuenca\\
+Redes Vehiculares, Proyecto Interciclo\\
+Cuenca, Ecuador}}
+
+\maketitle
+
+\begin{abstract}
+Cuando un accidente cierra una avenida, el centro de tráfico suele enterarse cuando la cola ya creció y los vehículos que vienen detrás siguen entrando a ella. Este trabajo cierra el lazo dato--modelo--acción--medida--visualización para Cuenca sobre un gemelo digital en SUMO con datos sintéticos justificados. Un modelo GCN-GRU predice la velocidad de las 1694 celdas de 200~m de la ciudad a 60~min como corrección del promedio histórico; un detector automático de incidentes (AID) basado en \emph{gradient boosting} vigila tres corredores minuto a minuto; y, en bucle cerrado mediante TraCI, una alarma confirmada genera un mensaje DENM para los vehículos conectados cercanos, que recalculan su ruta. Cada parte se compara con una línea base justa y se verifica con un banco de \PruebasTotal{} pruebas automáticas. En el test, el error medio a 60~min es de 1,82~km/h con sensores y 1,86~km/h con solo el 50~\% de vehículos V2X, frente a 3,16~km/h del promedio histórico. El AID detecta el 90~\% de los incidentes que forman cola en 4,5~min (14~\% un detector al azar con la misma tasa de falsas alarmas), con 1,9--4,4~\% de falsas alarmas. En SUMO, el aviso reduce en 27,8~\% la demora de los vehículos afectados por un cierre total y en 8,1~\% la de toda la red. Todos los resultados son sintéticos y el código acepta datos reales con el mismo formato.
+\end{abstract}
+
+\begin{IEEEkeywords}
+V2X, DENM, SUMO, TraCI, redes neuronales de grafos, GRU, detección automática de incidentes, gemelo digital, datos sintéticos.
+\end{IEEEkeywords}
+
+\section{Introducción}
+Un centro de control de tráfico necesita responder tres preguntas: cómo estará la ciudad dentro de un rato, dónde acaba de ocurrir un incidente y qué hacer para que afecte a la menor cantidad de conductores. La comunicación vehicular (V2X) agrega una fuente de datos, los vehículos conectados, y un canal de actuación, los mensajes de aviso como el DENM del estándar ETSI~\cite{etsi_denm}.
+
+El objetivo fue construir y evaluar ese ciclo completo sobre la red real de Cuenca: (i) predecir la velocidad de toda la ciudad a 1~h con un error medio menor a 3~km/h; (ii) detectar incidentes en tres corredores con una tasa de detección (DR) de al menos 85~\%, un tiempo medio de detección (MTTD) menor a 5~min y una tasa de falsas alarmas (FAR) de 3--5~\%; y (iii) demostrar en simulación que el aviso V2X reduce las demoras. Como los datos de la EMOV EP no estaban disponibles para el periodo de estudio, el trabajo usa datos sintéticos generados en SUMO~\cite{sumo}, justificados en el Anexo y etiquetados como tales en cada tabla y figura.
+
+Las contribuciones son: un predictor liviano que aprende la corrección sobre lo habitual y funciona con sensores y con datos V2X parciales; un detector evaluado siempre frente a un detector al azar con la misma tasa de alarmas; una validación en bucle cerrado real en SUMO, con y sin la IA sobre el mismo día; y un repositorio que repite el experimento completo con un solo script (Sección~\ref{sec:replica}).
+
+\section{Estado del arte}\label{sec:arte}
+\input{estado_arte.tex}
+
+\section{Metodología}
+\subsection{Gemelo digital y datos sintéticos}
+La red vial de las 15 parroquias urbanas se obtuvo de OpenStreetMap y se convirtió con \texttt{netconvert} (16\,274 aristas, 360 semáforos). La demanda se genera como un proceso de Poisson no homogéneo con perfiles horarios distintos para laborable, sábado y domingo, origen y destino ponderados por longitud y carriles, y rutas con \texttt{duarouter}. La demanda pico se fijó en el punto de saturación de la red, V0~=~17\,000~veh/h, hallado con un barrido de tres semillas. Un día laborable tiene unos 200\,000 viajes. Con lluvia, la demanda sube 4~\% y la velocidad deseada baja al 88~\%. Los incidentes bloquean uno, dos o todos los carriles de una arista durante 10 a 25~min. Cada día se simula con la semilla 1000~+~día. Los parámetros, su fuente y la validación frente a datos reales de Cuenca están en los Anexos~\ref{an:param} y~\ref{an:valida}.
+
+Se simularon 46 días: 28 de entrenamiento, 7 de validación, 7 de test (días 36--42) y 4 de estrés (43: más demanda; 44: lluvia; 45 y 46: 30 y 70~\% de vehículos conectados). La ciudad se divide en 1694 celdas de 200~m agregadas cada 5~min, y los tres corredores tienen detectores de lazo por carril agregados cada minuto (310 tramos). Cada registro tiene dos vistas: \texttt{gt}, lo que ven sensores que cuentan todos los autos, y \texttt{obs}, lo que reportan solo los vehículos V2X. Para el AID se generaron 20 días adicionales (101--120) con 8 incidentes cada uno. La Fig.~\ref{fig:flujo} resume el lazo.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\sffamily\scriptsize,
+  caja/.style={draw=ia,fill=ia!8,rounded corners=2pt,minimum width=1.55cm,minimum height=.75cm,align=center,text width=1.5cm},
+  fl/.style={-{Latex[length=1.6mm]},thick,draw=black!60}]
+\node[caja] (sumo) {SUMO\\66 días};
+\node[caja,right=.35cm of sumo] (ds) {Dataset\\celdas y tramos};
+\node[caja,right=.35cm of ds] (pred) {GCN-GRU\\+15 a +60 min};
+\node[caja,below=.55cm of pred] (aid) {AID\\cada minuto};
+\node[caja,left=.35cm of aid] (denm) {DENM a autos\\V2X a 2 km};
+\node[caja,left=.35cm of denm] (traci) {SUMO + TraCI\\bucle cerrado};
+\draw[fl] (sumo)--(ds); \draw[fl] (ds)--(pred); \draw[fl] (ds.south) |- ([yshift=-.28cm]ds.south) -| (aid.north);
+\draw[fl] (aid)--(denm); \draw[fl] (denm)--(traci); \draw[fl] (traci.north) |- ([yshift=.28cm]traci.north) -| ([xshift=-.3cm]aid.north);
+\end{tikzpicture}
+\caption{Lazo dato--modelo--acción--medida: SUMO genera los datos, los modelos aprenden de ellos y el detector vuelve a SUMO para actuar sobre el tráfico; el tablero visualiza todo.}
+\label{fig:flujo}
+\end{figure}
+
+\subsection{Modelo de predicción GCN-GRU}
+El promedio histórico (HA), es decir la velocidad media de cada celda a esa hora en ese tipo de día, ya explica gran parte del tráfico de rutina. Por eso el modelo aprende la corrección relativa sobre el HA. La entrada son 12 pasos de 5~min con seis canales por celda (velocidad relativa, ocupación, densidad y flujo corregidos por la penetración V2X, presencia de datos y desvío respecto al HA), más la hora, el tipo de día y la lluvia. Una convolución de grafo~\cite{gcn} combina cada celda con las de aguas arriba y aguas abajo según el sentido de las calles; una GRU~\cite{gru} de 32 unidades recorre la hora de historia, y una capa lineal entrega la corrección para +15, +30, +45 y +60~min. El modelo tiene 29\,908 parámetros, usa pérdida de Huber con más peso en los horizontes largos y las celdas congestionadas, y entrena en CPU.
+
+\subsection{Detector automático de incidentes}
+Un incidente y la congestión de hora pico se ven parecidos si solo se mira la velocidad. Por cada tramo y minuto se calculan 39 rasgos causales: medidas actuales y sus cambios; el desvío respecto al perfil habitual del tramo (\emph{z-score}, solo con entrenamiento); diferencias con los tramos de aguas arriba y aguas abajo, la idea del algoritmo California~\cite{payne}; el desvío mediano de todos los corredores, para separar una perturbación local de una general como la lluvia; el indicador de lluvia; y rasgos de novedad que separan un cambio brusco de un tramo lento toda la hora. Un clasificador \emph{histogram gradient boosting}~\cite{hgb,sklearn} da la probabilidad, y la alarma exige 3~min seguidos sobre el umbral. Un \emph{incidente con impacto} es aquel cuya anomalía sostenida supera el percentil 99 del ruido normal; de 271 incidentes en los corredores, 132 lo tienen.
+
+El umbral se elige sin mirar el test, con predicciones fuera de pliegue (cuatro pliegues) en 51 días de entrenamiento y validación: se maximiza la DR con impacto con FAR~≤~3~\% por separado en días normales, días con muchos incidentes, días secos y días de lluvia. Resultado: 0,08 en seco y 0,12 con lluvia. Los 15~min posteriores a un incidente, mientras la cola se disipa, no cuentan ni como acierto ni como falsa alarma.
+
+\subsection{Acción y medida: bucle cerrado en SUMO}
+El SIL reproduce en SUMO 1.12 el día 119 con la misma demanda, rutas y semilla del dataset, desde 90~min antes hasta 45~min después del incidente \texttt{inc119\_3}: un cierre total de los dos carriles de la Av.~de las Américas durante 14~min a las 14:10. Se corren dos simulaciones idénticas. En ambas, un cliente TraCI lee los detectores cada segundo (cada auto cuenta una vez con su velocidad de cruce, como el detector E1) y ejecuta el AID cada minuto. En la corrida con IA, al confirmarse la alarma se envía un DENM a los vehículos V2X que tienen la vía bloqueada en su ruta a menos de 2~km. Su navegador suma 10~min al tiempo actual de esa calle y recalcula la ruta con los tiempos actuales de la red, así que solo se desvía si gana tiempo. Se usa el umbral estricto del AID (0,18, FAR~≤~1~\% fuera de pliegue), porque un aviso falso desvía conductores. El DENM caduca a los 3~min sin alarma, y en los primeros 60~min no se actúa. Los vehículos afectados son los que tenían la calle del incidente en su ruta original, igual en ambas corridas.
+
+\subsection{Visualización}
+Un tablero web servido en local (\texttt{localhost:8097}) muestra la ciudad real y predicha a 1~h para cada día de test, el detector en los corredores con su comparación con el azar, las dos corridas del bucle cerrado lado a lado y el resultado del banco de pruebas (Fig.~\ref{fig:dash}).
+
+\subsection{Evaluación: líneas base y reglas}
+Cada parte se compara con la forma simple de hacerlo sin IA: la predicción, con el HA y la persistencia; el detector, con uno que dispara al azar con la \emph{misma} FAR, porque con muchas alarmas cualquier detector acierta de casualidad; y el aviso, con el mismo día en SUMO sin IA. Se respetan estas reglas: división por días completos; estadísticas solo de entrenamiento; ninguna etiqueta como entrada; el test se mide una sola vez; y ninguna cifra se escribe a mano, sino que se lee de archivos generados por los programas. Un banco de \PruebasTotal{} pruebas con \texttt{pytest} verifica la causalidad, recalcula las métricas, comprueba que el SIL reproduzca el dataset y que este informe cite las cifras reales. Pasan \PruebasOk{} de \PruebasTotal{}; las \PruebasFallan{} que fallan son metas del AID que no se alcanzaron y la precisión de los avisos del SIL, y se dejan fallar a propósito para no ocultarlas.
+
+\section{Resultados}
+Todos los resultados de esta sección son \textbf{sintéticos}: provienen de la simulación en SUMO y no de medidas de campo.
+
+\subsection{Predicción a una hora}
+La Tabla~\ref{tab:pred} y la Fig.~\ref{fig:horizonte} muestran el error en los siete días de test, en las celdas con vehículos. El modelo reduce en 43~\% el error del HA y cumple la meta con sensores y con solo la mitad de los vehículos conectados. Donde más gana es en congestión: el HA se equivoca 6,8~km/h y el modelo 3,3~km/h. En los cuatro días de estrés el MAE queda entre 1,77 y 1,98~km/h; en el día de lluvia el HA llega a 5,68~km/h. En las celdas con incidente el error sigue alto (4,2~km/h), porque un incidente que empieza dentro de la hora de predicción no se puede anticipar.
+
+\begin{table}[t]
+\centering
+\caption{Predicción a +60 min en el test (días 36--42) \sint}
+\label{tab:pred}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Método & MAE (km/h) & RMSE (km/h) & MAPE (\%) \\
+\midrule
+Persistencia (línea base) & 3,75 & 6,44 & 14,1 \\
+Promedio histórico (línea base) & 3,16 & 5,02 & 12,4 \\
+GCN-GRU, sensores & \textbf{1,82} & \textbf{3,07} & \textbf{6,6} \\
+GCN-GRU, V2X 50 \% & 1,86 & 3,15 & 6,9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{pred_horizonte.pdf}
+\caption{Error medio absoluto en el test según el horizonte \sint.}
+\label{fig:horizonte}
+\end{figure}
+
+\subsection{Detección de incidentes}
+La Tabla~\ref{tab:aid} resume el test y la Fig.~\ref{fig:aidazar} compara con el detector al azar. En los días con incidentes y sensores, el AID encuentra 19 de 21 incidentes con impacto en 4,5~min (intervalo de confianza del 95~\% de la DR: 69--94~\%), frente al 14~\% del azar, y cumple DR y MTTD. Con V2X la detección baja a 76~\%, porque con la mitad de los vehículos la señal por minuto es más ruidosa. En los días normales solo hay 6 incidentes con impacto; el AID encuentra 5, pero tarda 7,3~min. La FAR queda en 1,9~\% en días normales y 4,4~\% en días con 8 incidentes, dentro de la meta.
+
+\begin{table}[t]
+\centering
+\caption{AID en el test con el umbral elegido sin test \sint}
+\label{tab:aid}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Días, fuente & DR imp. & Azar & DR todos & FAR & MTTD \\
+\midrule
+36--42, sensores & 83 \% & 50 \% & 71 \% & 1,9 \% & 7,3 min \\
+36--42, V2X & 83 \% & 67 \% & 65 \% & 1,9 \% & 5,0 min \\
+117--120, sensores & 90 \% & 14 \% & 81 \% & 4,4 \% & 4,5 min \\
+117--120, V2X & 76 \% & 52 \% & 69 \% & 4,5 \% & 2,9 min \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{aid_azar.pdf}
+\caption{DR de los incidentes con impacto frente a un detector al azar con la misma FAR; la línea punteada es la meta de 85~\% \sint.}
+\label{fig:aidazar}
+\end{figure}
+
+\subsection{Aviso V2X en bucle cerrado}
+El AID en línea confirmó el cierre 2,65~min después de su inicio y se avisó a 460 vehículos, aunque 317 de esos avisos (69~\%) salieron antes del incidente por falsas alarmas; como el DENM caduca, esos vehículos volvieron a su ruta y ese costo está incluido. La Tabla~\ref{tab:sil} y la Fig.~\ref{fig:silcola} muestran el resultado sobre los 30\,700 viajes de la ventana: la demora de los afectados baja 27,8~\% y la de toda la red 8,1~\%. La cola máxima casi no cambia, porque los vehículos que ya están en el tramo no pueden salir; la ganancia está en los que todavía no llegan.
+
+\begin{table}[t]
+\centering
+\caption{Bucle cerrado en SUMO, incidente \texttt{inc119\_3} \sint}
+\label{tab:sil}
+\footnotesize
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Métrica & Sin IA & Con IA & Cambio \\
+\midrule
+Pérdida de tiempo, afectados (s) & 314 & 227 & −27,8 \% \\
+Tiempo de viaje, afectados (s) & 928 & 853 & −8,1 \% \\
+Pérdida media de la red (s) & 152,8 & 140,4 & −8,1 \% \\
+VHT de la red (veh·h) & 5116 & 5019 & −1,9 \% \\
+Cola máxima (m por carril) & 126 & 123 & −2,8 \% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{sil_cola.pdf}
+\caption{Cola aguas arriba del cierre, medida en SUMO con y sin aviso \sint.}
+\label{fig:silcola}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=.49\textwidth]{dash_ciudad_pred.png}\hfill
+\includegraphics[width=.49\textwidth]{dash_sil.png}
+\caption{Tablero interactivo \sint. Izquierda: predicción a 1~h sobre la ciudad, ficha del día y pronóstico de una celda. Derecha: bucle cerrado en SUMO con y sin aviso V2X.}
+\label{fig:dash}
+\end{figure*}
+
+\section{Discusión}
+\input{discusion.tex}
+
+\section{Conclusiones}
+El lazo completo funciona sobre el gemelo digital de Cuenca. La predicción a 1~h \ok{} con 1,82~km/h de error (1,86 con V2X al 50~\%), 43~\% menos que el promedio histórico, y se mantiene en lluvia, con más demanda y con otra penetración. El AID cumple la meta de falsas alarmas y detecta el 90~\% de los incidentes con cola en 4,5~min, seis veces más que el azar, pero todavía \no{} toda la meta: tarda 7,3~min en días normales y con V2X detecta el 76~\%. El aviso DENM reduce un 27,8~\% la demora de los afectados y un 8,1~\% la de toda la red, siempre que se limite a un área de relevancia, caduque y el navegador use tiempos actuales. Como trabajo futuro proponemos etiquetar las colas secundarias como parte del incidente, usar la predicción a 15~min como entrada del AID, probar el SIL con varios incidentes y penetraciones, y reemplazar el dato sintético por datos de la EMOV con el mismo formato.
+
+\section{Replicabilidad del experimento}\label{sec:replica}
+\input{replicabilidad.tex}
+
+\bibliographystyle{IEEEtran}
+\bibliography{base,referencias}
+
+\appendices
+\input{anexos.tex}
+
+\end{document}

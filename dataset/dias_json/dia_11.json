@@ -1,0 +1,32 @@
+{
+ "dia": {
+  "dia_id": 11,
+  "semana": 2,
+  "dow": 3,
+  "tipo_dia": "laborable",
+  "factor_demanda": 0.987,
+  "lluvia": false,
+  "penetracion_v2x": 0.5,
+  "n_incidentes": 0,
+  "split": "train",
+  "semilla": 1011,
+  "v0": 17000.0,
+  "factor_efectivo": 0.987,
+  "reintentos": 0,
+  "n_viajes_generados": 209760,
+  "n_viajes_completados": 207383,
+  "vkt_km": 1270134.125,
+  "vht_h": 34920.3515625,
+  "duracion_media_s": 606.1889038085938,
+  "perdida_media_s": 156.40557861328125,
+  "vel_media_viaje_kmh": 36.372314453125,
+  "teleports": 115,
+  "max_en_red": 3258.2099609375,
+  "max_cola": 6.039999961853027,
+  "pct_celdas_congestion_pico": 4.29428563942673,
+  "seg_preparacion": 1677,
+  "seg_sumo": 3421,
+  "seg_total": 5171
+ },
+ "incidentes": []
+}

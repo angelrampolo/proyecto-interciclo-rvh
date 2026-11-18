@@ -1,0 +1,20 @@
+[22:10:32] Barrido de saturación: [8000, 12000, 16000, 20000, 24000, 28000, 32000, 40000] veh/h, 8 en paralelo
+[22:15:12] R=  8000 veh/h  thr=   7880  efic=0.98  v= 39.6 km/h  cola=    0  tp=   0  (280 s)
+[22:16:46] R= 12000 veh/h  thr=  11932  efic=0.99  v= 38.5 km/h  cola=    0  tp=   9  (374 s)
+[22:18:30] R= 16000 veh/h  thr=  14753  efic=0.92  v= 30.0 km/h  cola=    6  tp= 363  (478 s)
+[22:20:23] R= 20000 veh/h  thr=  15699  efic=0.78  v= 22.0 km/h  cola=   38  tp=1276  (590 s)
+[22:23:00] R= 24000 veh/h  thr=  12931  efic=0.54  v= 13.7 km/h  cola=  160  tp=4451  (748 s)
+[22:24:10] R= 28000 veh/h  thr=  13670  efic=0.49  v= 12.1 km/h  cola=  240  tp=5622  (817 s)
+[22:25:47] R= 32000 veh/h  thr=  13235  efic=0.41  v= 10.3 km/h  cola=  381  tp=7169  (914 s)
+[22:29:19] R= 40000 veh/h  thr=  11639  efic=0.29  v=  7.4 km/h  cola=  690  tp=12218  (1127 s)
+[22:29:20] V0 = 16000 veh/h  -> /home/angel/v2x/van3twin-docker/Proyecto Interciclo/etapa2/resultados/barrido_saturacion.csv
+ demanda_vph  viajes  throughput_vph  vel_media_kmh  en_red_medio  cola_final  teleports  perdida_media_s  duracion_media_s  longitud_media_km  seg_cpu  eficiencia  bajo_saturacion
+        4000    4972          4001.0          40.29        602.41           0          0            96.05            521.05               5.80       46        1.00             True
+        8000    9964          7880.0          39.64       1229.08           0          0           103.38            531.85               5.84      280        0.98             True
+       12000   14995         11932.0          38.46       1895.26           0          9           117.33            545.52               5.82      374        0.99             True
+       16000   20023         14753.0          29.99       3148.39           6        363           216.17            636.51               5.71      478        0.92             True
+       20000   24971         15699.0          21.96       5059.25          38       1276           304.81            707.31               5.43      590        0.78            False
+       24000   29987         12931.0          13.74       8438.52         160       4451           262.72            641.05               4.98      748        0.54            False
+       28000   35105         13670.0          12.10      10624.17         240       5622           298.74            670.73               4.89      817        0.49            False
+       32000   40321         13235.0          10.34      13324.45         381       7169           322.78            686.92               4.74      914        0.41            False
+       40000   49982         11639.0           7.45      19267.82         690      12218           376.93            722.94               4.40     1127        0.29            False

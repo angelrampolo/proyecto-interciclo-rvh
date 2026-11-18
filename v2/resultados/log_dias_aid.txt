@@ -1,0 +1,24 @@
+[10:33:09] dias pendientes 20, en paralelo 5
+[12:07:18] dia 101 (aid_train, x0.921): max en red 2720, teleports 66, reintentos 0, 5648 s
+[12:08:48] dia 102 (aid_train, x0.931): max en red 2924, teleports 92, reintentos 0, 5739 s
+[12:10:36] dia 104 (aid_train, x0.959): max en red 3005, teleports 47, reintentos 0, 5846 s
+[12:12:32] dia 103 (aid_train, x0.978): max en red 3089, teleports 63, reintentos 0, 5963 s
+[12:23:37] dia 105 (aid_train, x0.993 lluvia): max en red 4297, teleports 1461, reintentos 0, 6627 s
+[12:58:55] dia 107: gridlock: 10161 autos en la red a t_sim=50164 s; se repite con 5 % menos de demanda
+[13:01:49] dia 106 (aid_train, x0.921): max en red 2904, teleports 56, reintentos 0, 3272 s
+[13:14:02] dia 108 (aid_train, x1.045): max en red 4092, teleports 1010, reintentos 0, 3807 s
+[13:19:27] dia 110 (aid_train, x0.996): max en red 3291, teleports 177, reintentos 0, 3350 s
+[13:19:49] dia 109 (aid_train, x1.014 lluvia): max en red 4382, teleports 993, reintentos 0, 4036 s
+[13:53:29] dia 107 (aid_train, x1.037 lluvia): max en red 4325, teleports 992, reintentos 1, 6281 s
+[13:58:55] dia 112 (aid_train, x0.933): max en red 2742, teleports 28, reintentos 0, 2693 s
+[14:08:27] dia 114 (aid_val, x0.938): max en red 2893, teleports 77, reintentos 0, 2918 s
+[14:08:44] dia 111 (aid_train, x1.038 lluvia): max en red 7501, teleports 11379, reintentos 0, 4015 s
+[14:14:15] dia 113 (aid_val, x1.023): max en red 3391, teleports 369, reintentos 0, 3289 s
+[14:45:43] dia 115 (aid_val, x1.04): max en red 3734, teleports 588, reintentos 0, 3134 s
+[14:58:22] dia 116 (aid_val, x1.015 lluvia): max en red 4552, teleports 2233, reintentos 0, 3567 s
+[14:59:17] dia 118: gridlock: 10053 autos en la red a t_sim=60660 s; se repite con 5 % menos de demanda
+[15:03:02] dia 119 (aid_test, x0.966): max en red 3344, teleports 348, reintentos 0, 2927 s
+[15:05:29] dia 117 (aid_test, x1.014 lluvia): max en red 4752, teleports 3102, reintentos 0, 3422 s
+[15:34:04] dia 120 (aid_test, x1.001 lluvia): max en red 4284, teleports 970, reintentos 0, 2901 s
+[15:42:58] dia 118 (aid_test, x1.049 lluvia): max en red 4301, teleports 2567, reintentos 1, 5654 s
+consolidado: (20, 160)

@@ -1,0 +1,26 @@
+La Tabla~\ref{tab:param} resume los parámetros del generador. Donde no hay una cifra publicada para Cuenca, el valor se fijó por un criterio propio que se indica (\emph{diseño}).
+
+\begin{table}[h]
+\centering
+\caption{Parámetros del generador sintético}
+\label{tab:param}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}L{2.2cm}L{2.25cm}L{3.95cm}@{}}
+\toprule
+Parámetro & Valor & Fuente o criterio \\
+\midrule
+Red vial & OSM, 15 parroquias urbanas & OpenStreetMap; límites de OSM o Ley de Tránsito (50~km/h urbano); Américas 50/70~km/h~\cite{canafe2026irap} \\
+Composición del parque & solo automóviles & 32~\% de los viajes son en vehículo privado~\cite{cazorla2026unimobility}; buses y motos fuera del alcance (Anexo~\ref{an:supuestos}) \\
+Demanda pico & V0 = 17\,000 veh/h & Diseño: punto de saturación de la red (eficiencia ≥ 0,95), barrido con 3 semillas \\
+Viajes por día & \textasciitilde200\,000 & Conservador frente a \textasciitilde400\,000 viajes en auto estimados (1,5~M viajes, 32~\% en auto, 1,2 personas por auto~\cite{elmercurio2026movilidad,cazorla2026unimobility,elmercurio2020carros}) \\
+Perfil horario & picos 07--08, 12--14, 18--19 & Picos medidos por radar~\cite{jacome2024radar} y pico de mediodía~\cite{pena2021canaris} \\
+Factor del día & 0,88--1,07 & Diseño: variabilidad entre días sin colapsar la red \\
+Conducción & Krauss, σ 0,5, τ 1,0 s, speedFactor N(1; 0,1) & Valores por defecto de SUMO~\cite{sumo2026vtypes} \\
+Lluvia & 20~\% de días; velocidad deseada ×0,88; demanda +4~\% & Lluvia fuerte: −6 a −9~\% de velocidad libre y −10 a −11~\% de capacidad~\cite{hranac2006weather} \\
+Duración de incidentes & 10--25 min & Incidentes ``menores'' (< 30 min)~\cite{fhwa2009mutcd6i,li2018incidentduration} \\
+Penetración V2X & 50~\% (30 y 70 en estrés) & Diseño: escenario intermedio y sensibilidad \\
+Semillas & 1000 + día; 2026; 2027 & Reproducibilidad \\
+\bottomrule
+\end{tabular}
+\end{table}
