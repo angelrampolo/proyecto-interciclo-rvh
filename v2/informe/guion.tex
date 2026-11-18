@@ -31,7 +31,7 @@ Modelo de predicción & Fernando & 4 & 1:05 \\
 Detector y acción en SUMO & Stalyn & 5 y 6 & 1:55 \\
 Demo en vivo & Karla & 7 & 2:00 \\
 Resultados frente a la línea base & Fernando & 8 & 1:20 \\
-Lo que falta y conclusión & Karla & 9 y 10 & 0:40 \\
+Conclusiones & Karla & 9 y 10 & 0:40 \\
 \midrule
 & & Total & 9:40 \\
 \bottomrule
@@ -71,17 +71,17 @@ Para la acción metimos el detector dentro de SUMO. Lee los detectores por TraCI
 \diapo{7. Demo en vivo}{2:00}
 \nota{Antes de exponer, dejar dos pestañas abiertas: \texttt{localhost:8097/?dia=38\&t=08:00\&capa=pred\#ciudad} y \texttt{localhost:8097/?t=14:05\#sil}, con la velocidad en 2 min/s. Si algo falla, quedarse en la diapositiva y explicar con la captura.}
 \nota{(Pestaña 1, unos 40 s)} Este es nuestro tablero. Estamos en un miércoles con lluvia a las 8 de la mañana. Esta capa es lo que la IA predice para las 9; cambio a lo que de verdad pasó a las 9, y se parecen. En la tarjeta de arriba se ve que ese día lo habitual se equivoca 5,4 km/h y la IA 1,8.
-\nota{(Pestaña 2, unos 80 s)} Ahora el accidente. Son las 14:05 del día 119; le doy a Reproducir. A la izquierda nadie avisa; a la derecha está nuestro sistema. A las 14:10 se cierra la avenida de las Américas y aparece la cola en los dos lados. A la derecha, los círculos azules son los avisos V2X a los autos que vienen. \nota{(Pausar cerca de 14:22)} Abajo está la cola medida en SUMO, y en la tabla, que los autos que iban hacia el cierre pierden 28~\% menos tiempo. Fernando les resume los resultados.
+\nota{(Pestaña 2, unos 80 s; pulsar ``Cámara lenta'' y Reproducir)} Ahora el accidente, el mismo día simulado dos veces. A las 14:10 se cierra la avenida de las Américas. Los puntos son los mismos autos en los dos mapas: los que van hacia el cierre. A la izquierda nadie les avisa y entran a la cola. A la derecha, cuando el detector confirma el accidente, les llega el DENM, se vuelven azules y toman otra calle. Arriba, los contadores: de los 109 autos avisados durante el cierre, 8 de cada 10 esquivaron el tramo cerrado, y cada uno ganó en promedio 9 minutos. \nota{(Opcional: en ``Un auto avisado'', pulsar ``Ver desde el aviso'' y ``Seguir con la cámara'')} Este auto, sin aviso, perdió 21 minutos en la cola; con aviso, menos de 4. Fernando les resume los resultados.
 
 \parte{Resultados frente a la línea base}{Fernando · 1:20}
 
 \diapo{8. Resultados frente a la línea base}{1:20}
 Cada parte la comparamos con la forma simple de hacerlo sin IA. En predicción, la línea base es el promedio histórico: se equivoca 3,16 km/h a una hora y nuestra red 1,82, un 43~\% menos; con solo la mitad de autos conectados, 1,86. En el día de lluvia la diferencia es mayor: 5,4 contra 1,8. En el detector, la línea base justa es uno que dispara al azar con la misma cantidad de alarmas: encuentra el 14~\% de los accidentes con cola y el nuestro el 90~\%, con falsas alarmas dentro de la meta. Y en el aviso, frente al mismo día sin aviso, la demora de los afectados baja 27,8~\% y la de toda la red 8,1~\%. Todo se midió una sola vez en días que los modelos nunca vieron, y \PruebasTotal{} pruebas automáticas verifican cada cifra.
 
-\parte{Lo que falta y conclusión}{Karla · 0:40}
+\parte{Conclusiones}{Karla · 0:40}
 
-\diapo{9. Lo que falta y conclusión}{0:35}
-Lo que todavía no cumple: el detector tarda 7,3 minutos en días normales y con V2X detecta el 76~\%; y el 69~\% de los avisos salieron por falsas alarmas, aunque caducan y su costo ya está en el resultado. En conclusión, el lazo completo funciona: predice, detecta y avisa, y cuando lleguen los datos reales de la EMOV solo cambia la fuente, no el código.
+\diapo{9. Conclusiones}{0:35}
+En conclusión, el lazo completo funciona. Predecimos la ciudad a una hora con 1,8 km/h de error, un 43~\% menos que lo habitual, también con solo la mitad de autos conectados. Detectamos 9 de cada 10 accidentes que forman cola en unos 4 minutos y medio. Y el aviso V2X baja 28~\% la demora de los autos que iban hacia el cierre. Cuando lleguen los datos reales de la EMOV, solo cambia la fuente, no el código. El siguiente paso es un detector más rápido en días tranquilos y probar más accidentes en el bucle cerrado.
 
 \diapo{10. Gracias}{0:05}
 Muchas gracias. Quedamos atentos a sus preguntas.

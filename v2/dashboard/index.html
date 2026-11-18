@@ -167,6 +167,36 @@ body.sin-reloj .reloj,body.sin-reloj .linea{display:none}
 .ficha dl{display:grid;grid-template-columns:auto auto;gap:3px 12px;margin:0;font-size:12.5px}
 .ficha dt{color:var(--muted)}.ficha dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
 .sint{display:inline-block;margin-left:6px;font-size:11px;padding:1px 7px;border:1px solid var(--line2);border-radius:999px;color:var(--muted);vertical-align:1px}
+.silbarra{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 8px;flex-wrap:wrap}
+.leyAutos{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.leyAutos i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:8px}
+.leyAutos i.anillo{border:2px solid var(--denm);width:12px;height:12px;background:none}
+.autoFila{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap}
+.autoBotones{display:flex;gap:6px}
+.autoBotones .chip,#silZoom{position:static}
+.historia{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));margin:0 0 12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.paso{all:unset;cursor:pointer;padding:10px 12px 11px;position:relative;border-right:1px solid var(--line);transition:background .3s}
+.paso:last-child{border-right:0}
+.paso .hh{font:600 12px var(--f-mono);color:var(--dim);transition:color .3s}
+.paso .tt{display:block;font:600 13.5px/1.25 var(--f-disp);color:var(--muted);margin-top:2px;transition:color .3s}
+.paso .dd{display:block;font-size:11.5px;color:var(--dim);margin-top:2px;line-height:1.3}
+.paso::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:var(--av,0%);background:var(--ia);transition:width .25s linear}
+.paso.hecho .hh{color:var(--ia)}.paso.hecho .tt{color:var(--fg)}
+.paso.actual{background:rgba(42,212,196,.08)}.paso.actual .tt{color:var(--ia)}
+.paso:hover{background:rgba(255,255,255,.03)}
+.kpisSil{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 12px}
+.kpiS{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 14px;position:relative;overflow:hidden}
+.kpiS span{font-size:12px;color:var(--muted);display:block}
+.kpiS b{display:block;font:700 30px/1.15 var(--f-disp);font-variant-numeric:tabular-nums;color:var(--fg);margin:3px 0 1px}
+.kpiS i{font-style:normal;font-size:11.5px;color:var(--dim)}
+.kpiS.ok b{color:var(--ok)}
+.kpiS.pulso{animation:pulsoK .6s ease-out}
+@keyframes pulsoK{from{box-shadow:0 0 0 0 rgba(122,167,255,.55)}to{box-shadow:0 0 0 14px rgba(122,167,255,0)}}
+.silBotones{display:flex;gap:6px}
+.chip.on{background:rgba(42,212,196,.16);border-color:var(--ia);color:var(--ia)}
+canvas.graf.alta{height:230px}
+@media (max-width:1150px){.historia{grid-template-columns:repeat(3,minmax(0,1fr))}.kpisSil{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){.kpiS.pulso{animation:none}}
 </style>
 </head>
 <body>
@@ -202,7 +232,7 @@ body.sin-reloj .reloj,body.sin-reloj .linea{display:none}
           <button id="atras" aria-label="Retroceder 15 minutos">−15 min</button>
           <button id="play" class="play">Reproducir</button>
           <button id="adelante" aria-label="Avanzar 15 minutos">+15 min</button>
-          <select id="vel" aria-label="Velocidad de reproducción"><option value="2">2 min/s</option><option value="5" selected>5 min/s</option><option value="15">15 min/s</option></select>
+          <select id="vel" aria-label="Velocidad de reproducción"><option value="0.5">0,5 min/s</option><option value="2">2 min/s</option><option value="5" selected>5 min/s</option><option value="15">15 min/s</option></select>
         </div>
       </div>
     </div>
@@ -321,23 +351,39 @@ body.sin-reloj .reloj,body.sin-reloj .linea{display:none}
 </section>
 
 <section id="s-sil" hidden>
-  <div class="guia" data-g="sil"><div class="ico">i</div><p><b>Qué ves:</b> el mismo accidente simulado dos veces en SUMO. <b>Izquierda:</b> nadie avisa. <b>Derecha:</b> la IA lo detecta y envía un aviso V2X (DENM) a los autos conectados cercanos, que se desvían. <b>Prueba:</b> pulsa Reproducir y compara la cola roja y la tabla de resultados.</p><button class="x" aria-label="Ocultar ayuda">×</button></div>
+  <div class="guia" data-g="sil"><div class="ico">i</div><p><b>Qué ves:</b> el mismo accidente simulado dos veces en SUMO. <b>Izquierda:</b> nadie avisa. <b>Derecha:</b> la IA lo detecta y envía un aviso V2X (DENM) a los autos conectados cercanos, que se desvían. <b>Los puntos</b> son los mismos autos en los dos mapas: los que reciben el aviso. A la derecha se vuelven azules cuando les llega el DENM y toman otra calle; a la izquierda siguen hacia la cola. <b>Prueba:</b> pulsa Reproducir y compara la cola roja y la tabla de resultados.</p><button class="x" aria-label="Ocultar ayuda">×</button></div>
   <div class="card" style="margin-bottom:14px">
     <h2>Qué pasa si la IA actúa <small id="silSub"></small></h2>
     <p class="nota" id="silIntro" style="margin-top:0"></p>
+  </div>
+  <div class="historia" id="silPasos"></div>
+  <div class="kpisSil">
+    <div class="kpiS"><span>Autos avisados durante el cierre</span><b id="kSilAv">0</b><i>reciben el DENM y recalculan su ruta</i></div>
+    <div class="kpiS"><span>Tomaron otra ruta</span><b id="kSilEv">0</b><i id="kSilEvP">esquivan el tramo cerrado</i></div>
+    <div class="kpiS ok"><span>Tiempo ahorrado por los afectados</span><b id="kSilAh">0</b><i>horas-vehículo frente a no avisar</i></div>
+    <div class="kpiS"><span>Ganancia media por auto avisado</span><b id="kSilGm">–</b><i>minutos menos de viaje (al llegar a destino)</i></div>
+  </div>
+  <div class="silbarra">
+    <span class="leyAutos"><i style="background:var(--aviso)"></i>auto que recibirá el aviso (a la izquierda nunca le llega) <i style="background:var(--denm)"></i>ya recibió el DENM <i class="anillo"></i>el aviso llega <i style="background:#fff;outline:2px solid var(--ok)"></i>auto seguido (abajo)</span>
+    <span class="silBotones"><button class="chip" id="silLento">Cámara lenta</button><button class="chip" id="silZoom">Alejar: ver los desvíos</button></span>
   </div>
   <div class="duo">
     <div class="card"><h2>Sin IA <span class="tag" style="background:rgba(154,166,184,.15);color:var(--base)">base</span></h2><div class="mini"><canvas id="cSilBase"></canvas></div></div>
     <div class="card"><h2>Con IA + aviso V2X <span class="tag" style="background:rgba(42,212,196,.15);color:var(--ia)">DENM</span></h2><div class="mini"><canvas id="cSilIa"></canvas></div></div>
   </div>
+  <div class="card" id="silAutoCard" style="margin-top:14px">
+    <h2>Un auto avisado, paso a paso <small>el mismo auto en las dos corridas: punteado naranja sin aviso, punteado verde con aviso</small></h2>
+    <div class="autoFila"><p id="silAuto" class="nota" style="margin:0"></p>
+      <div class="autoBotones"><button class="chip" id="silAutoAnt">Anterior</button><button class="chip" id="silAutoVer">Ver desde el aviso</button><button class="chip" id="silSeguir">Seguir con la cámara</button><button class="chip" id="silAutoSig">Siguiente</button></div></div>
+  </div>
   <div class="grid2" style="margin-top:14px">
     <div class="col">
       <div class="card"><h2>Cola aguas arriba del incidente <small>metros por carril, medido en SUMO</small></h2><canvas class="graf" id="cSilCola"></canvas></div>
-      <div class="card"><h2>Velocidad en el tramo afectado <small>km/h</small></h2><canvas class="graf" id="cSilVel"></canvas></div>
+      <div class="card"><h2>Tiempo perdido acumulado de los autos que iban al cierre <small>horas-vehículo; la brecha es lo que ahorra el aviso</small></h2><canvas class="graf alta" id="cSilAcum"></canvas></div>
     </div>
     <div class="col">
       <div class="card"><h2>Resultado de la corrida <small>mismo día, misma demanda, misma semilla</small></h2><div class="tw"><table id="tablaSil"></table></div></div>
-      <div class="card"><h2>Línea de tiempo <small>lo que vio y decidió el sistema</small></h2><div id="silEventos"></div></div>
+      <div class="card"><h2>¿Cuánto ganó cada auto avisado? <small>autos avisados durante el cierre</small></h2><canvas class="graf" id="cSilHist"></canvas><p class="nota" id="silHistNota" style="margin:6px 0 0"></p></div>
     </div>
   </div>
 </section>
@@ -653,7 +699,9 @@ function avisosAid(){
 let silBase,silIa;
 function silSerie(r,m){const s=D.sil[r].serie;let best=s[0];for(const p of s){if(p.min<=m)best=p;else break}return best}
 function dibSil(mm,r){
-  const s=D.sil,ctx=mm.ctx;baseCalles(mm,false);
+  const s=D.sil,ctx=mm.ctx;
+  if(seguir){const f=autoFoco();const p=f&&posEn(f[r],t*60);if(p){mm.cx+=(p[0]-mm.cx)*.25;mm.cy+=(p[1]-mm.cy)*.25}}
+  baseCalles(mm,false);
   const p=silSerie(r,t),inc=s.geo;
   // tramo aguas arriba coloreado por velocidad del tramo; cola dibujada hacia atras desde el incidente
   ctx.lineCap="round";
@@ -664,10 +712,71 @@ function dibSil(mm,r){
   const activo=t>=s.incidente.t_ini_min&&t<=s.incidente.t_fin_min;
   ctx.beginPath();ctx.arc(mm.X(inc.x),mm.Y(inc.y),7,0,7);ctx.fillStyle=activo?V("alerta"):V("dim");ctx.fill();
   if(r==="ia"&&p.alarma_incidente&&!RM){const fase=(performance.now()/700)%1;for(let k=0;k<3;k++){const ff=(fase+k/3)%1;ctx.beginPath();ctx.arc(mm.X(inc.x),mm.Y(inc.y),20+ff*140*mm.s*10,0,7);ctx.strokeStyle=`rgba(122,167,255,${.7*(1-ff)})`;ctx.lineWidth=2;ctx.stroke()}}
+  dibAutos(mm,r);
   ctx.font="600 15px "+V("f-disp");ctx.fillStyle=V("fg");
   ctx.fillText(`Cola ${fmt(cola,0)} m · ${fmt(p.vel_tramo_kmh,0)} km/h · ${p.detenidos_tramo??0} autos detenidos`,12,22);
   if(r==="ia"){const tot=D.sil.ia.serie.filter(q=>q.min<=t).reduce((a,q)=>a+q.avisos_denm,0);ctx.fillStyle=V("denm");ctx.fillText(`Avisos DENM enviados: ${tot}`,12,42)}
   if(!activo){ctx.fillStyle=V("muted");ctx.font="13px "+V("f-body");ctx.fillText(t<s.incidente.t_ini_min?`El incidente empieza a las ${hhmm(s.incidente.t_ini_min)}`:"El incidente ya terminó",12,mm.H-14)}
+}
+/* autos avisados: posicion interpolada cada 10 s, estela de 2 min y recorrido completo del auto seguido */
+let focoK=0,silLejos=false;
+function posEn(a,ts){const n=a.length/3;if(!n||ts<a[0]||ts>a[(n-1)*3])return null;let lo=0,hi=n-1;while(hi-lo>1){const m=(lo+hi)>>1;if(a[m*3]<=ts)lo=m;else hi=m}
+  const t0=a[lo*3],t1=a[hi*3],u=t1>t0?(ts-t0)/(t1-t0):0;return [a[lo*3+1]+(a[hi*3+1]-a[lo*3+1])*u,a[lo*3+2]+(a[hi*3+2]-a[lo*3+2])*u]}
+function trazo(ctx,mm,a,hasta,desde){ctx.beginPath();let on=false;for(let i=0;i<a.length;i+=3){if(a[i]<desde)continue;if(a[i]>hasta)break;const X=mm.X(a[i+1]),Y=mm.Y(a[i+2]);on?ctx.lineTo(X,Y):ctx.moveTo(X,Y);on=true}return on}
+function autoFoco(){const s=D.sil;return s.foco&&s.foco.length?s.autos.find(a=>a.id===s.foco[((focoK%s.foco.length)+s.foco.length)%s.foco.length]):null}
+function dibAutos(mm,r){
+  const s=D.sil;if(!s.autos)return;const ctx=mm.ctx,ts=t*60,foco=autoFoco();
+  if(foco){const a=foco[r];ctx.setLineDash([7,5]);ctx.lineWidth=3;ctx.strokeStyle=r==="ia"?V("ok"):V("aviso");ctx.globalAlpha=.95;if(trazo(ctx,mm,a,1e9,0))ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+    if(r==="ia"){const [ta,xa,ya]=foco.aviso;ctx.beginPath();ctx.arc(mm.X(xa),mm.Y(ya),9,0,7);ctx.strokeStyle=V("denm");ctx.lineWidth=2.5;ctx.stroke();
+      ctx.fillStyle=V("denm");ctx.font="600 12px "+V("f-body");ctx.fillText("DENM "+hhmm(ta/60),mm.X(xa)+12,mm.Y(ya)-9)}}
+  for(const a of s.autos){const tr=a[r],p=posEn(tr,ts);if(!p)continue;
+    const yaAvisado=r==="ia"&&ts>=a.aviso[0],col=yaAvisado?V("denm"):V("aviso"),es=foco&&a.id===foco.id;
+    ctx.globalAlpha=.35;ctx.lineWidth=2;ctx.strokeStyle=col;if(trazo(ctx,mm,tr,ts,ts-120)){ctx.lineTo(mm.X(p[0]),mm.Y(p[1]));ctx.stroke()}ctx.globalAlpha=1;
+    ctx.beginPath();ctx.arc(mm.X(p[0]),mm.Y(p[1]),es?6.5:3.3,0,7);ctx.fillStyle=es?"#fff":col;ctx.fill();
+    if(es){ctx.lineWidth=2.5;ctx.strokeStyle=r==="ia"?V("ok"):V("aviso");ctx.stroke()}
+    if(r==="ia"&&ts>=a.aviso[0]&&ts-a.aviso[0]<45){const f=(ts-a.aviso[0])/45;ctx.beginPath();ctx.arc(mm.X(p[0]),mm.Y(p[1]),5+f*18,0,7);ctx.strokeStyle=`rgba(122,167,255,${1-f})`;ctx.lineWidth=2;ctx.stroke()}}
+}
+function panelAuto(){
+  const s=D.sil,card=$("silAutoCard");if(!s.autos||!s.foco||!s.foco.length){card.hidden=true;return}card.hidden=false;
+  const a=autoFoco(),k=((focoK%s.foco.length)+s.foco.length)%s.foco.length,g=a.perdida[0]-a.perdida[1],R=s.autos_resumen||{};
+  $("silAuto").innerHTML=`<b>Auto ${k+1} de ${s.foco.length}</b> entre los que iban hacia el cierre y recibieron el aviso. Recibió el DENM a las <b>${hhmm(a.aviso[0]/60)}</b>, a unos ${fmt(a.dist,0)} m del cierre en línea recta. `+
+    `<span style="color:var(--aviso)">Sin aviso</span>: viaje de ${fmt(a.dur[0]/60,1)} min y ${fmt(a.perdida[0]/60,1)} min perdidos. <span style="color:var(--ok)">Con aviso</span>: viaje de ${fmt(a.dur[1]/60,1)} min y ${fmt(a.perdida[1]/60,1)} min perdidos. <b>Ganó ${fmt(g/60,1)} min.</b>`+
+    (R.durante_incidente?`<br>De los ${fmt(R.durante_incidente,0)} autos avisados durante el cierre que iban hacia él, cada uno ganó en promedio <b>${fmt(R.ganancia_media_s/60,1)} min</b>.`:"");
+}
+let SIL_PASOS=[],kAnt={},seguir=false;
+function pasosSil(){const ps=document.querySelectorAll("#silPasos .paso");ps.forEach((b,k)=>{const m=SIL_PASOS[k][0],sig=k+1<SIL_PASOS.length?SIL_PASOS[k+1][0]:D.sil.ventana_min[1];
+  b.classList.toggle("hecho",t>=m);b.classList.toggle("actual",t>=m&&t<sig);b.style.setProperty("--av",t>=sig?"100%":t>=m?((t-m)/(sig-m)*100).toFixed(1)+"%":"0%")})}
+function kpisSil(){
+  const s=D.sil;if(!s.autos||!s.acumulado)return;const ts=t*60,ti=s.incidente.t_ini_min*60;
+  let av=0,ev=0,gn=0,ng=0;for(const a of s.autos){if(!a.durante||a.aviso[0]>ts)continue;av++;if(a.evito)ev++;if(a.llega_ia<=ts){gn+=a.ganancia;ng++}}
+  const A=s.acumulado,k=Math.max(0,Math.min(A.base.length-1,Math.floor(t-A.min0))),ah=t<A.min0?0:A.base[k]-A.ia[k];
+  const val={kSilAv:fmt(av,0),kSilEv:fmt(ev,0),kSilAh:fmt(Math.max(0,ah),1)+" h",kSilGm:ng?fmt(gn/ng/60,1):"–"};
+  for(const [id,v] of Object.entries(val)){const e=$(id);if(e.textContent!==v){e.textContent=v;if(kAnt[id]!==undefined&&!RM&&id!=="kSilGm"&&id!=="kSilAh"){const c=e.parentElement;c.classList.remove("pulso");void c.offsetWidth;c.classList.add("pulso")}kAnt[id]=v}}
+  $("kSilEvP").textContent=av?`${fmt(100*ev/av,0)} % de los avisados esquiva el tramo cerrado`:"esquivan el tramo cerrado";
+}
+function grafAcum(){
+  const s=D.sil,A=s.acumulado;if(!A)return;const c=$("cSilAcum"),x=c.getContext("2d"),w=c.clientWidth,h=c.clientHeight,d=devicePixelRatio||1;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0);
+  const a=s.ventana_min,pl=38,pb=18,X=m=>pl+(m-a[0])/(a[1]-a[0])*(w-pl-10),mx=Math.max(...A.base)*1.08,Y=v=>8+(1-v/mx)*(h-pb-8),n=A.base.length,M=k=>A.min0+k;
+  x.fillStyle="rgba(255,77,94,.10)";x.fillRect(X(s.incidente.t_ini_min),8,X(s.incidente.t_fin_min)-X(s.incidente.t_ini_min),h-pb-8);
+  x.strokeStyle=V("line");x.fillStyle=V("dim");x.font="10px "+V("f-mono");[0,.5,1].forEach(r=>{const v=mx/1.08*r;x.beginPath();x.moveTo(pl,Y(v));x.lineTo(w,Y(v));x.stroke();x.fillText(fmt(v,0),4,Y(v)+3)});
+  for(let m=Math.ceil(a[0]/30)*30;m<=a[1];m+=30)x.fillText(hhmm(m),X(m)-14,h-4);
+  const hasta=Math.max(0,Math.min(n-1,Math.floor(t-A.min0)));
+  if(t>=A.min0){x.beginPath();for(let k=0;k<=hasta;k++)x.lineTo(X(M(k)),Y(A.base[k]));for(let k=hasta;k>=0;k--)x.lineTo(X(M(k)),Y(A.ia[k]));x.closePath();x.fillStyle="rgba(86,214,138,.22)";x.fill()}
+  [["base",V("base")],["ia",V("ia")]].forEach(([r,col])=>{x.beginPath();A[r].forEach((v,k)=>{const px=X(M(k)),py=Y(v);k?x.lineTo(px,py):x.moveTo(px,py)});x.strokeStyle=col;x.globalAlpha=.28;x.lineWidth=2;x.stroke();x.globalAlpha=1;
+    if(t>=A.min0){x.beginPath();for(let k=0;k<=hasta;k++){const px=X(M(k)),py=Y(A[r][k]);k?x.lineTo(px,py):x.moveTo(px,py)}x.lineWidth=2.6;x.stroke()}});
+  if(t>=A.min0){const px=X(M(hasta));x.fillStyle=V("fg");x.fillRect(px-1,8,2,h-pb-8);const yb=Y(A.base[hasta]),yi=Y(A.ia[hasta]);[[yb,V("base")],[yi,V("ia")]].forEach(([py,col])=>{x.beginPath();x.arc(px,py,4.5,0,7);x.fillStyle=col;x.fill()});
+    const dif=A.base[hasta]-A.ia[hasta];if(dif>.5){x.fillStyle=V("ok");x.font="600 12px "+V("f-body");x.fillText(`${fmt(dif,1)} h ahorradas`,Math.min(px+8,w-110),(yb+yi)/2+4)}}
+  x.font="11px "+V("f-body");x.fillStyle=V("base");x.fillText("— sin aviso",pl+6,20);x.fillStyle=V("ia");x.fillText("— con aviso V2X",pl+80,20);
+}
+function grafHist(){
+  const s=D.sil,H=s.histograma;if(!H)return;const c=$("cSilHist"),x=c.getContext("2d"),w=c.clientWidth,h=c.clientHeight,d=devicePixelRatio||1;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0);
+  const n=H.cuentas.length,pb=30,mx=Math.max(...H.cuentas)*1.15,bw=(w-10)/n;
+  H.cuentas.forEach((v,k)=>{const bh=(h-pb-14)*v/mx,px=5+k*bw;x.fillStyle=H.desde[k]<0?"rgba(255,77,94,.75)":H.desde[k]<1?"rgba(154,166,184,.6)":"rgba(86,214,138,.8)";
+    x.beginPath();if(x.roundRect)x.roundRect(px+3,h-pb-bh,bw-6,bh,[4,4,0,0]);else x.rect(px+3,h-pb-bh,bw-6,bh);x.fill();
+    x.fillStyle=V("fg");x.font="600 11px "+V("f-mono");x.textAlign="center";if(v)x.fillText(v,px+bw/2,h-pb-bh-4);
+    x.fillStyle=V("dim");x.font="10px "+V("f-mono");x.fillText(H.etiquetas[k],px+bw/2,h-pb+13)});
+  x.textAlign="start";x.fillStyle=V("muted");x.font="10.5px "+V("f-body");x.fillText("minutos ganados frente a no avisar",5,h-3);
+  $("silHistNota").innerHTML=`<b style="color:var(--ok)">${fmt(H.ganan_pct,0)} %</b> de los avisados ganó tiempo; ${fmt(H.pierden,0)} perdieron un poco por un rodeo, porque el navegador decide con el tráfico de ese momento.`;
 }
 function grafSil(id,clave,unidad){
   const c=$(id),x=c.getContext("2d"),w=c.clientWidth,h=c.clientHeight,d=devicePixelRatio||1;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0);
@@ -681,7 +790,7 @@ function grafSil(id,clave,unidad){
   x.fillStyle=V("fg");x.fillRect(X(Math.max(a[0],Math.min(a[1],t)))-1,6,2,h-pb-6);
 }
 function panelSil(){
-  const s=D.sil,b=s.base,i=s.ia,c=s.comparacion_pct;
+  const s=D.sil,b=s.base,i=s.ia,c=s.comparacion_pct;panelAuto();
   $("silSub").textContent=`${s.incidente.via} · día ${s.incidente.dia} · ${s.incidente.carriles_bloqueados} de ${s.incidente.carriles_via} carriles · ${fmt(s.incidente.duracion_min,0)} min`;
   $("silIntro").innerHTML=`Se repitió en <b>SUMO real</b> (TraCI) el incidente <code>${s.incidente.inc_id}</code> del test con la misma demanda y semilla. En ambas corridas el AID vigila los detectores minuto a minuto. En la de la derecha, cuando confirma la alarma se envía un <b>aviso V2X (DENM)</b> a los autos conectados que tienen la vía bloqueada en su ruta a menos de 2 km; cada uno recalcula su camino con el tráfico actual. Para actuar se usa el umbral más estricto (${s.punto_actuacion?s.punto_actuacion.seco:"–"}, falsas alarmas ≤ 1 %), el aviso caduca a los ${s.denm_caduca_min??3} min sin alarma y en los primeros ${s.calentamiento_min??30} min (red llenándose) no se actúa. Las falsas alarmas también generan avisos: ${s.ia.avisos_antes_del_incidente??0} de ${s.ia.autos_avisados_denm} fueron antes del incidente. Ningún número está escrito a mano: todo sale de SUMO.`;
   const fila=(n,a,bb,u,dif,mejor)=>`<tr><td>${n}</td><td class="n">${a}</td><td class="n">${bb}</td><td class="n">${dif==null?"–":`<span class="pill ${(mejor?dif<0:dif>0)?"ok":"mal"}">${dif>0?"+":""}${fmt(dif,1)} %</span>`}</td></tr>`;
@@ -695,11 +804,16 @@ function panelSil(){
     fila("Autos afectados (ruta por la vía)",fmt(b.afectados,0),fmt(i.afectados,0),"",null)+
     fila("Detección en línea (MTTD)",b.mttd_min==null?"no":fmt(b.mttd_min,1)+" min",i.mttd_min==null?"no":fmt(i.mttd_min,1)+" min","",null)+
     fila("Autos avisados por DENM","0",fmt(i.autos_avisados_denm,0),"",null)+"</tbody>";
-  const ev=[[s.ventana_min[0],"Empieza la simulación: la red se llena con la demanda del día"],[s.incidente.t_ini_min,`Incidente en ${s.incidente.via}: ${s.incidente.carriles_bloqueados} carril(es) bloqueado(s)`]];
-  if(i.alarma_min)ev.push([i.alarma_min,`El AID confirma la alarma (${fmt(i.mttd_min,1)} min) y sale el aviso DENM a ${fmt(i.autos_avisados_denm,0)} autos conectados`]);
-  ev.push([s.incidente.t_fin_min,"Se retira el vehículo accidentado"],[s.ventana_min[1],"Fin: se mide la recuperación"]);
-  $("silEventos").innerHTML=ev.sort((a,b)=>a[0]-b[0]).map(([m,txt])=>`<div class="test" style="grid-template-columns:62px 1fr;cursor:pointer" data-m="${m}"><b style="font-family:var(--f-mono);color:${m<=t?"var(--ia)":"var(--dim)"}">${hhmm(m)}</b><span>${txt}</span></div>`).join("");
-  $("silEventos").querySelectorAll("[data-m]").forEach(e=>e.onclick=()=>irA(+e.dataset.m));
+  const R=s.autos_resumen||{},ti=s.incidente.t_ini_min,am=i.alarma_min||ti+3;
+  SIL_PASOS=[[s.ventana_min[0],"La red se llena","Tráfico normal de un viernes; el detector vigila"],
+    [ti,"Cierre total",`${s.incidente.carriles_bloqueados} de ${s.incidente.carriles_via} carriles de la Av. de las Américas`],
+    [am,"El detector lo confirma",`${fmt(i.mttd_min,1)} min después, sin que nadie llame`],
+    [am+0.2,"Sale el aviso V2X","DENM a los autos conectados a menos de 2 km"],
+    [am+2,"Los avisados se desvían",R.durante_incidente?`${fmt(R.durante_incidente,0)} autos recalculan su ruta`:"recalculan su ruta con el tráfico actual"],
+    [s.incidente.t_fin_min+10,"Resultado",`${fmt(c.perdida_afectados,1)} % de demora para los afectados`]];
+  $("silPasos").innerHTML=SIL_PASOS.map(([m,tt,dd],k)=>`<button class="paso" data-k="${k}"><span class="hh">${hhmm(m)}</span><span class="tt">${k+1}. ${tt}</span><span class="dd">${dd}</span></button>`).join("");
+  $("silPasos").querySelectorAll(".paso").forEach(b=>b.onclick=()=>{const m=SIL_PASOS[+b.dataset.k][0];t=Math.max(s.ventana_min[0],m-(+b.dataset.k>0?0.5:0));render()});
+  grafHist();
 }
 
 /* ---------------- como funciona ---------------- */
@@ -792,6 +906,14 @@ document.querySelectorAll(".capas .chip").forEach(c=>c.onclick=()=>{capa=c.datas
   if(capa==="error"){$("leyTit").textContent="Error de la IA a 1 h (solo celdas con autos)";esc.style.background="linear-gradient(90deg,#ff4d5e,#ff4d5e 30%,#5b6676 42%,#5b6676 58%,#7aa7ff 70%,#7aa7ff)";et.innerHTML="<span>más lenta</span><span>±2 km/h</span><span>más rápida</span>";$("leySin").style.display="none"}
   else{$("leyTit").textContent="Velocidad / velocidad libre";esc.style.background="";et.innerHTML="<span>0,2 atasco</span><span>0,6</span><span>1,0 libre</span>";$("leySin").style.display=""}
   render()});
+$("silSeguir").onclick=()=>{seguir=!seguir;$("silSeguir").classList.toggle("on",seguir);$("silSeguir").textContent=seguir?"Dejar de seguir":"Seguir con la cámara";render()};
+$("silLento").onclick=()=>{const v=$("vel"),lento=v.value!=="0.5";v.value=lento?"0.5":"2";$("silLento").classList.toggle("on",lento);$("silLento").textContent=lento?"Velocidad normal":"Cámara lenta"};
+$("silAutoAnt").onclick=()=>{focoK--;panelAuto();render()};
+$("silAutoSig").onclick=()=>{focoK++;panelAuto();render()};
+$("silAutoVer").onclick=()=>{const a=autoFoco();if(a){t=Math.max(D.sil.ventana_min[0],a.aviso[0]/60-1.5);render()}};
+$("silZoom").onclick=()=>{silLejos=!silLejos;$("silZoom").textContent=silLejos?"Acercar: ver la cola":"Alejar: ver los desvíos";
+  const g=D.sil.geo.bbox,cx=(g[0]+g[2])/2,cy=(g[1]+g[3])/2,f=silLejos?2.6:1,hx=(g[2]-g[0])/2*f,hy=(g[3]-g[1])/2*f;
+  if(silBase){silBase.ver(cx-hx,cy-hy,cx+hx,cy+hy);silIa.ver(cx-hx,cy-hy,cx+hx,cy+hy)}render()};
 function prepararMapas(){
   const bb=D.bbox;
   if(seccion==="ciudad"){if(!mapa){mapa=Mapa($("cMapa"),{click:(x,y)=>{let b=null,bd=1e9;D.celdas.forEach((c,i)=>{const dd=Math.hypot(c[0]-x,c[1]-y);if(dd<bd){bd=dd;b=i}});sel=bd<300?b:null;$("celdaTxt").textContent=sel==null?"toca una celda del mapa":`celda ${D.celdas[sel][4]} · v libre ${D.celdas[sel][2]} km/h`;render()}});mapa.ver(bb[0]+2500,bb[1]+1500,bb[2]-2500,bb[3]-1000)}else mapa.ajustar()}
@@ -804,8 +926,7 @@ function render(){
   $("hora").innerHTML=hhmm(t)+(seccion==="sil"&&D.sil?`<small>simulación SUMO · ${D.meta.nombre_dia_sil||""} · día ${D.sil.incidente.dia}</small>`:`<small>${D.meta.nombre_dia||D.meta.tipo} · día ${D.meta.dia}</small>`);dibTiempo();
   if(seccion==="ciudad"){dibCiudad();kpisCiudad();grafCelda()}
   if(seccion==="aid"){dibAid();matrizAid();avisosAid()}
-  if(seccion==="sil"&&D.sil){dibSil(silBase,"base");dibSil(silIa,"ia");grafSil("cSilCola","cola_m_por_carril");grafSil("cSilVel","vel_tramo_kmh");
-    $("silEventos").querySelectorAll("[data-m]").forEach(e=>e.firstChild.style.color=(+e.dataset.m<=t)?"var(--ia)":"var(--dim)")}
+  if(seccion==="sil"&&D.sil){dibSil(silBase,"base");dibSil(silIa,"ia");grafSil("cSilCola","cola_m_por_carril");grafAcum();kpisSil();pasosSil()}
 }
 function latido(){if(!playing&&(seccion==="ciudad"||seccion==="aid"||seccion==="sil"))render();if(seccion==="como"&&!RM)dibFlujo();setTimeout(()=>requestAnimationFrame(latido),RM?2000:60)}
 function iniciar(){
@@ -825,6 +946,9 @@ function iniciar(){
   if(q.get("celda")){const v=+q.get("celda");let k=D.celdas.findIndex(c=>c[4]===v);if(k<0&&Number.isInteger(v)&&v>=0&&v<D.celdas.length)k=v;if(k>=0){sel=k;$("celdaTxt").textContent=`celda ${D.celdas[sel][4]} · v libre ${D.celdas[sel][2]} km/h`}}   // acepta el numero de celda que muestra el tablero
   if(q.get("t")){const [hh,mm]=q.get("t").split(":").map(Number);t=hh*60+(mm||0)}
   if(q.get("paso")){const pb=document.querySelectorAll("#flujo .paso")[+q.get("paso")];if(pb)pb.click()}
+  if(q.has("lejos")&&D.sil){prepararMapas();$("silZoom").click()}
+  if(q.has("seguir")&&D.sil)$("silSeguir").click();
+  if(q.get("auto")&&D.sil)focoK=+q.get("auto");
   if(q.get("singuia")!=null)document.querySelectorAll(".guia").forEach(g=>g.remove());
   refrescarPanel();render();
   addEventListener("hashchange",()=>{const b=document.querySelector(`nav button[data-s="${location.hash.slice(1)}"]`);if(b)b.click()});

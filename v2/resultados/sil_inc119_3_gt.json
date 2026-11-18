@@ -1832,7 +1832,7 @@
   "cola_max_m_por_carril": 126.0,
   "detenidos_max": 36,
   "vel_tramo_min_kmh": 30.0,
-  "seg": 491
+  "seg": 378
  },
  "ia": {
   "serie": [
@@ -3641,7 +3641,7 @@
   "cola_max_m_por_carril": 122.5,
   "detenidos_max": 35,
   "vel_tramo_min_kmh": 30.0,
-  "seg": 527
+  "seg": 571
  },
  "comparacion_pct": {
   "perdida_afectados": -27.8,

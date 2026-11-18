@@ -213,24 +213,29 @@ Aviso V2X: demora de la red & sin aviso 153 s & 140 s & \textcolor{verde2}{−8,
 \end{frame}
 
 % ================= KARLA
-\begin{frame}{Lo que falta y conclusión}
+\begin{frame}{Conclusiones}
 \begin{columns}[T]
-\begin{column}{.48\textwidth}
-\begin{alertblock}{Lo que no cumple todavía}
-\small
-\begin{itemize}
-\item Detector lento en días normales (7,3 min) y 76 \% de detección con V2X
-\item 69 \% de los avisos salieron por falsas alarmas (caducan y su costo ya está en el resultado)
-\item Un solo accidente en el SIL
-\end{itemize}
-\end{alertblock}
+\begin{column}{.32\textwidth}
+\begin{block}{Predecir}
+\small 1,82 km/h de error a 1 hora, \alert{43 \% menos} que lo habitual; igual con solo 50 \% de autos V2X.
+\end{block}
 \end{column}
-\begin{column}{.48\textwidth}
-\begin{block}{Conclusión}
-\small El lazo completo funciona: predice con 1,82 km/h de error, detecta 9 de cada 10 accidentes con cola y el aviso baja 28 \% la demora de los afectados. Cuando llegue el dato real de la EMOV, solo cambia la fuente, no el código.
+\begin{column}{.32\textwidth}
+\begin{block}{Detectar}
+\small \alert{9 de cada 10} accidentes con cola, en 4,5 min; el azar, 1 de cada 7.
+\end{block}
+\end{column}
+\begin{column}{.32\textwidth}
+\begin{block}{Avisar}
+\small \alert{−28 \%} de demora para los autos que iban al cierre y −8 \% en toda la red.
 \end{block}
 \end{column}
 \end{columns}
+\vspace{14pt}
+\begin{center}
+\alert{El lazo completo funciona, y el dato real de la EMOV entra sin cambiar el código.}\\[6pt]
+{\small\color{gris}Siguiente paso: un detector más rápido en días tranquilos y más accidentes en el bucle cerrado.}
+\end{center}
 \end{frame}
 
 {\setbeamercolor{background canvas}{bg=verde}
@@ -239,7 +244,6 @@ Aviso V2X: demora de la red & sin aviso 153 s & 140 s & \textcolor{verde2}{−8,
 \vspace{1.5cm}
 {\color{white}\fontsize{34}{36}\selectfont\bfseries ¡Gracias!}\\[10pt]
 {\color{white}\large ¿Preguntas?}\\[18pt]
-{\color{white!80!verde}\small Tablero en vivo: \texttt{http://localhost:8097}}\\[4pt]
 {\color{white!80!verde}\small Angel Apolo · Fernando Terán · Stalyn Ochoa · Karla Barrera}
 \end{frame}}
 

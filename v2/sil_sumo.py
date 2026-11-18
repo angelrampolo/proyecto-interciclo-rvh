@@ -9,7 +9,7 @@ Dos corridas con el mismo dia, la misma demanda y la misma semilla:
 Nada esta escrito a mano: las colas, demoras y tiempos de viaje salen de SUMO (TraCI + tripinfo).
 Uso:  python sil_sumo.py --inc inc37_5 --aid gt
 """
-import argparse, gzip, importlib.util, json, os, subprocess, sys, time
+import argparse, gzip, importlib.util, json, os, subprocess, sys, tempfile, time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import numpy as np, pandas as pd, joblib
@@ -23,6 +23,10 @@ import traci  # 1.12, igual que el SUMO del contenedor
 
 CAL = E2.CALENTAMIENTO
 PUERTO = 8813
+# modo grafico (ver_en_sumo.sh): SIL_GUI=1 abre sumo-gui y SIL_VER=ia|base elige la corrida; no escribe resultados
+GUI = os.environ.get("SIL_GUI") == "1"
+NARANJA, AZUL = (255, 150, 40, 255), (70, 130, 255, 255)
+PASO_TRAY = 10          # s entre posiciones guardadas de cada auto seguido (solo para el tablero)
 RADIO_DENM = 2000.0     # m de recorrido antes del incidente (area de relevancia del DENM, ETSI EN 302 637-3)
 CALENTAMIENTO_SIL = 60 * 60   # s: red casi vacia al inicio y rasgos de 60 min del AID; en ese lapso no se actua
 CADUCA_MIN = 3          # min sin alarma tras los cuales el DENM se cancela (validez del DENM, ETSI)
@@ -69,9 +73,14 @@ def preparar(inc, trabajo, t0, t1):
 
 def arrancar_sumo(trabajo, t0, t1, semilla, nombre):
     subprocess.run(["docker", "rm", "-f", nombre], capture_output=True)
+    pantalla = []
+    if GUI:      # la ventana de sumo-gui se muestra en el escritorio del anfitrion (X11 o XWayland)
+        pantalla = ["-e", f"DISPLAY={os.environ.get('DISPLAY', ':0')}", "-v", "/tmp/.X11-unix:/tmp/.X11-unix", "-e", "LIBGL_ALWAYS_SOFTWARE=1"]
+        if os.environ.get("XAUTHORITY"):
+            pantalla += ["-e", "XAUTHORITY=/tmp/.xauth", "-v", f"{os.environ['XAUTHORITY']}:/tmp/.xauth:ro"]
     cmd = ["docker", "run", "-d", "--rm", "--name", nombre, "-p", f"{PUERTO}:{PUERTO}", "-u", f"{os.getuid()}:{os.getgid()}",
-           "-e", "SUMO_HOME=/usr/share/sumo", "-v", f"{RAIZ}:/w:ro", "-v", f"{trabajo}:/t", "-w", "/w", E2.IMG,
-           "sumo", "-n", E2.RED, "-r", "/t/rutas.rou.xml.gz,/t/incidentes.rou.xml", "-a", "/t/vtypes.add.xml,/t/salidas.add.xml",
+           "-e", "SUMO_HOME=/usr/share/sumo", *pantalla, "-v", f"{RAIZ}:/w:ro", "-v", f"{trabajo}:/t", "-w", "/w", E2.IMG,
+           "sumo-gui" if GUI else "sumo", *(["--start", "--delay", "20"] if GUI else []), "-n", E2.RED, "-r", "/t/rutas.rou.xml.gz,/t/incidentes.rou.xml", "-a", "/t/vtypes.add.xml,/t/salidas.add.xml",
            "--begin", str(t0), "--end", str(t1), "--seed", str(semilla), "--no-step-log", "--no-warnings",
            "--time-to-teleport", "300", "--max-depart-delay", "900", "--ignore-junction-blocker", "30",
            "--tripinfo-output", f"/t/tripinfo_{nombre}.xml", "--remote-port", str(PUERTO), "--num-clients", "1"]
@@ -108,6 +117,9 @@ def corrida(modo_ia, inc, trabajo, t0, t1, dia, aid, tipo, U):
     serie, alarmas_on, primera_alarma, avisados, afectados = [], np.zeros(E, bool), None, set(), set()
     racha = np.zeros(E, int)
     penalizados, sin_alarma, cancelados = {}, 0, 0      # DENM vigentes: auto -> aristas penalizadas
+    # recorridos para el tablero: posicion cada PASO_TRAY s de los autos que iban al cierre y de los avisados
+    # (leer la posicion por TraCI no cambia la simulacion)
+    seguir, tray, aviso_info = set(), {}, {}
     aristas_celda = set(pd.read_parquet(C.DS / "aristas.parquet", filters=[("celda", "==", int(inc.celda_id))]).id)
     celda_inc = [ie[e] for e in edges if e in aristas_celda]
     i_inc = ie.get(inc.edge)
@@ -119,6 +131,14 @@ def corrida(modo_ia, inc, trabajo, t0, t1, dia, aid, tipo, U):
     # lazo, con su velocidad de cruce = largo / tiempo sobre el lazo. (Contar pasos hacia pesar 30 veces a un auto
     # detenido en un semaforo y la velocidad salia ~1 km/h; el banco de pruebas lo detecto.)
     acc = {d: [0, 0.0, 0.0, 0] for d in det_lista}      # n, sum(1/v), sum(ocupacion), pasos
+    if GUI:
+        forma = traci.lane.getShape(inc.edge + "_0")
+        cx, cy = forma[len(forma) // 2]
+        vista_gui = traci.gui.DEFAULT_VIEW
+        traci.gui.setOffset(vista_gui, cx, cy); traci.gui.setZoom(vista_gui, 900)
+        traci.poi.add("cierre", cx, cy, (255, 40, 60, 255), "CIERRE 14:10", layer=200, width=25, height=25)
+        print(f"[sumo-gui] {'CON IA (DENM)' if modo_ia else 'SIN IA'}: naranja = iba al cierre, azul = recibio el DENM. "
+              f"El cierre empieza a las {int(inc.t_ini // 3600):02d}:{int(inc.t_ini % 3600 // 60):02d} (hora del dia).", flush=True)
     t = t0
     while t < t1:
         traci.simulationStep()
@@ -126,7 +146,14 @@ def corrida(modo_ia, inc, trabajo, t0, t1, dia, aid, tipo, U):
         # afectados: autos cuya ruta ORIGINAL pasa por la arista del incidente (misma definicion en ambas corridas)
         for v in traci.simulation.getDepartedIDList():
             if inc.edge in traci.vehicle.getRoute(v):
-                afectados.add(v)
+                afectados.add(v); seguir.add(v)
+                if GUI:
+                    traci.vehicle.setColor(v, NARANJA)
+        if t % PASO_TRAY == 0 and seguir:
+            vivos_t = set(traci.vehicle.getIDList())
+            for v in seguir & vivos_t:
+                x, y = traci.vehicle.getPosition(v)
+                tray.setdefault(v, []).append((int(t - CAL), round(x), round(y)))
         for d, r in traci.inductionloop.getAllSubscriptionResults().items():
             a_ = acc[d]
             a_[2] += r[tc.LAST_STEP_OCCUPANCY]; a_[3] += 1
@@ -193,6 +220,11 @@ def corrida(modo_ia, inc, trabajo, t0, t1, dia, aid, tipo, U):
                         traci.vehicle.setAdaptedTraveltime(v, b, demora[b])
                     traci.vehicle.rerouteTraveltime(v, currentTravelTimes=True)    # tiempos actuales de toda la red (como un navegador con trafico); solo se desvia si la alternativa es mas rapida
                     avisados.add(v); penalizados[v] = adelante; n_avisos += 1
+                    if GUI:
+                        traci.vehicle.setColor(v, AZUL)
+                    if v not in aviso_info:
+                        x, y = traci.vehicle.getPosition(v)
+                        aviso_info[v] = (int(tdia), round(x), round(y)); seguir.add(v)
             serie.append({"min": round(tdia / 60, 1), "prob_max_celda": round(float(p[celda_inc].max()), 3) if celda_inc else 0,
                           "alarmas_corredor": int(alarmas_on.sum()), "alarma_incidente": alarma_inc,
                           "vel_arista_kmh": None if np.isnan(m["vel"][i_inc, k]) else round(float(m["vel"][i_inc, k] * vff[inc.edge]), 1),
@@ -205,6 +237,9 @@ def corrida(modo_ia, inc, trabajo, t0, t1, dia, aid, tipo, U):
                 serie[-1].update({"detenidos_tramo": int(det), "cola_m_por_carril": round(float(cola), 1),
                                   "vel_tramo_kmh": round(float(vel_tramo), 1), "autos_en_red": traci.vehicle.getIDCount()})
     traci.close()
+    if GUI:      # la ventana queda abierta para mirarla; se cierra a mano
+        print("[sumo-gui] Simulacion terminada. Cierra la ventana de SUMO para salir.", flush=True)
+        return serie, None, primera_alarma, len(avisados), afectados, cancelados, tray, aviso_info
     time.sleep(2)
     subprocess.run(["docker", "rm", "-f", nombre], capture_output=True)
     trip = E2.leer_tripinfo(trabajo / f"tripinfo_{nombre}.xml")
@@ -212,7 +247,7 @@ def corrida(modo_ia, inc, trabajo, t0, t1, dia, aid, tipo, U):
     lo, hi = int((t0 - CAL) // 60), int((t1 - CAL) // 60)    # solo la ventana simulada, para comparar con el dataset
     np.savez_compressed(C.SALIDA / f"sil_matrices_{inc.inc_id}_{nombre}.npz", edges=np.array(edges), desde=lo,
                         **{k: v[:, lo:hi].astype(np.float16) for k, v in m.items()})
-    return serie, trip, primera_alarma, len(avisados), afectados, cancelados
+    return serie, trip, primera_alarma, len(avisados), afectados, cancelados, tray, aviso_info
 
 
 def main():
@@ -230,7 +265,7 @@ def main():
     U = {"seco": sel["umbral"], "lluvia": sel["umbral_lluvia"]}
     aid = dict(aid, persistencia=sel["persistencia"])
     tipo = C.dias().loc[inc.dia_id, "tipo_dia"]
-    trabajo = Path(os.environ.get("SIL_TRABAJO", "/tmp/claude-1000/sil")) / a.inc
+    trabajo = Path(os.environ.get("SIL_TRABAJO", Path(tempfile.gettempdir()) / "rvh_sil")) / a.inc
     trabajo.mkdir(parents=True, exist_ok=True)
     t0 = int((inc.t_ini + CAL - 5400) // 60 * 60)      # 1 h 30 min antes: la red se llena y se estabiliza
     t1 = int(inc.t_fin + CAL + 2700)      # 45 min despues del fin: se mide la recuperacion
@@ -241,9 +276,18 @@ def main():
            "aid": a.aid, "punto_actuacion": {"nombre": a.punto, **U, "persistencia": sel["persistencia"], "FAR_maxima": sel["FAR_maxima"]},
            "calentamiento_min": CALENTAMIENTO_SIL // 60, "denm_caduca_min": CADUCA_MIN, "ventana_min": [round((t0 - CAL) / 60, 1), round((t1 - CAL) / 60, 1)]}
     ap_solo = os.environ.get("SIL_SOLO_BASE") == "1"      # depuracion: solo la corrida base
-    for etq, ia in ((("base", False),) if ap_solo else (("base", False), ("ia", True))):
+    recorridos = {}
+    corridas = (("base", False),) if ap_solo else (("base", False), ("ia", True))
+    if GUI:
+        corridas = (("base", False),) if os.environ.get("SIL_VER") == "base" else (("ia", True),)
+    for etq, ia in corridas:
         t = time.time()
-        serie, trip, pa, n_av, afect, n_can = corrida(ia, inc, trabajo, t0, t1, dia, aid, tipo, U)
+        serie, trip, pa, n_av, afect, n_can, tray, av_info = corrida(ia, inc, trabajo, t0, t1, dia, aid, tipo, U)
+        if GUI:
+            print(f"[sumo-gui] autos avisados por DENM: {n_av}; deteccion: {'no' if pa is None else f'{(pa - inc.t_ini) / 60:.1f} min'}")
+            return
+        recorridos[etq] = {"tray": tray, "avisos": av_info, "dur": dict(zip(trip.veh_id, trip.duracion.round(1))),
+                           "perdida": dict(zip(trip.veh_id, trip.perdida.round(1))), "afectados": sorted(afect)}
         t_ini_m = inc.t_ini / 60
         previa = any(q["alarma_incidente"] for q in serie if t_ini_m - 3 <= q["min"] < t_ini_m)
         tr_af = trip[trip.veh_id.isin(afect)]
@@ -259,7 +303,7 @@ def main():
                     "vel_tramo_min_kmh": min(s.get("vel_tramo_kmh", 99) for s in serie if s["min"] >= res["incidente"]["t_ini_min"]),
                     "seg": round(time.time() - t)}
         print(etq, {k: v for k, v in res[etq].items() if k != "serie"}, flush=True)
-    if ap_solo:
+    if ap_solo or GUI:
         return
     b, i = res["base"], res["ia"]
     pct = lambda x, y: round(100 * (y - x) / x, 1) if x else None
@@ -269,6 +313,15 @@ def main():
                               "vht_red": pct(b["vht_h"], i["vht_h"]), "perdida_media_red": pct(b["perdida_media_s"], i["perdida_media_s"])}
     print("comparacion", res["comparacion_pct"])
     json.dump(res, open(C.SALIDA / f"sil_{a.inc}_{a.aid}.json", "w"), indent=1, ensure_ascii=False, default=float)
+    # recorridos de los autos avisados y de los que iban al cierre, en ambas corridas (para verlos en el tablero)
+    rb, ri = recorridos["base"], recorridos["ia"]
+    ids = sorted(set(rb["tray"]) | set(ri["tray"]))
+    sal = {"paso_s": PASO_TRAY, "afectados": sorted(set(rb["afectados"]) | set(ri["afectados"])),
+           "avisos": {v: list(x) for v, x in ri["avisos"].items()},
+           "autos": {v: {"base": rb["tray"].get(v, []), "ia": ri["tray"].get(v, []),
+                         "dur_base": rb["dur"].get(v), "dur_ia": ri["dur"].get(v),
+                         "perdida_base": rb["perdida"].get(v), "perdida_ia": ri["perdida"].get(v)} for v in ids}}
+    json.dump(sal, open(C.SALIDA / f"sil_recorridos_{a.inc}_{a.aid}.json", "w"), separators=(",", ":"), default=float)
 
 
 if __name__ == "__main__":

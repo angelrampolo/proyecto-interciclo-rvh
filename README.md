@@ -4,7 +4,7 @@ Predicción de velocidad a 1 hora, detección automática de incidentes y aviso 
 
 **Proyecto Interciclo de Redes Vehiculares, Universidad de Cuenca.** Angel Apolo, Fernando Terán, Stalyn Ochoa y Karla Barrera.
 
-**Versión evaluada:** etiqueta `v1.0-entrega` en https://github.com/angelrampolo/proyecto-interciclo-rvh
+**Versión evaluada:** etiqueta `v1.1-entrega` en https://github.com/angelrampolo/proyecto-interciclo-rvh
 
 > Todos los resultados vienen de un **gemelo digital de Cuenca en SUMO** y son **datos sintéticos**, no medidas de campo. La justificación de los datos, sus parámetros con fuente y la validación contra datos reales están en el anexo del informe (`v2/informe/informe.pdf`) y en `FORMATO_DATOS.md`.
 
@@ -58,6 +58,14 @@ Hay **un solo script**: `repetir_experimento.sh`.
 - la red (`red/cuenca_urbana.net.xml`) y el OSM de origen (`osm/`);
 - las tablas pequeñas del dataset (`dias`, `incidentes`, `celdas`, `aristas`);
 - todas las salidas que respaldan las cifras del informe (`v2/resultados/`).
+
+**Ver el aviso V2X en SUMO** (ventana gráfica `sumo-gui`):
+
+```bash
+./ver_en_sumo.sh            # corrida con IA: naranja = iba al cierre, azul = recibió el DENM y recalculó su ruta
+./ver_en_sumo.sh base       # la misma corrida sin IA (nadie avisa)
+./ver_en_sumo.sh replicar   # repite las dos corridas sin ventana y regenera resultados y tablero (~30 min)
+```
 
 **Abrir el tablero** (solo Python, sin instalar nada más):
 

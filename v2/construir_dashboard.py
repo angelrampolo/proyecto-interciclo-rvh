@@ -174,6 +174,65 @@ def main():
                       "bbox": [mx - x0 - 650, my - y0 - 420, mx - x0 + 650, my - y0 + 420]}
         al = [p["min"] for p in sil["ia"]["serie"] if p["alarma_incidente"] and p["min"] >= sil["incidente"]["t_ini_min"]]
         sil["ia"]["alarma_min"] = al[0] if al else None
+        # recorridos de los autos avisados en ambas corridas (sil_sumo.py los guarda) para verlos moverse en el tablero
+        rec = leer(f"sil_recorridos_{a.inc}_{sil['aid']}.json")
+        if rec:
+            gx, gy = sil["geo"]["x"], sil["geo"]["y"]
+            t_ini = sil["incidente"]["t_ini_min"] * 60
+            afect = set(rec["afectados"])
+            plano = lambda tr: [k for (tt, x, y) in tr for k in (int(tt), round(x - x0), round(y - y0))]
+            autos = []
+            for v, (ta, xa, ya) in rec["avisos"].items():
+                r = rec["autos"].get(v)
+                if not r or not r["base"] or not r["ia"]:
+                    continue
+                autos.append({"id": v, "base": plano(r["base"]), "ia": plano(r["ia"]), "aviso": [int(ta), round(xa - x0), round(ya - y0)],
+                              "dur": [r["dur_base"], r["dur_ia"]], "perdida": [r["perdida_base"], r["perdida_ia"]],
+                              "afectado": v in afect, "dist": round(float(np.hypot(xa - x0 - gx, ya - y0 - gy)))})
+            def dist_min(tr, desde):
+                """Distancia minima (m) entre el recorrido y el punto del cierre, desde un instante (segmentos, no solo muestras)."""
+                pts = np.array(tr, float).reshape(-1, 3)
+                pts = pts[pts[:, 0] >= desde - 10]
+                if len(pts) < 2:
+                    return 1e9
+                a_, b_ = pts[:-1, 1:], pts[1:, 1:]
+                ab = b_ - a_; ap = np.array([gx, gy]) - a_
+                u = np.clip((ab * ap).sum(1) / np.maximum((ab * ab).sum(1), 1e-9), 0, 1)
+                return float(np.min(np.hypot(*(a_ + ab * u[:, None] - [gx, gy]).T)))
+            for x in autos:
+                x["evito"] = bool(dist_min(x["ia"], x["aviso"][0]) > 60 and dist_min(x["base"], x["aviso"][0]) <= 60)
+                x["llega_ia"] = x["ia"][-3]
+                x["ganancia"] = None if None in x["perdida"] else round(x["perdida"][0] - x["perdida"][1], 1)
+            # tiempo perdido acumulado (veh-h) de TODOS los autos que iban al cierre, por minuto de llegada, en ambas corridas
+            m0, m1 = int(sil["ventana_min"][0]), int(sil["ventana_min"][1])
+            lleg = {"base": [], "ia": []}
+            for v in rec["afectados"]:
+                r = rec["autos"].get(v)
+                if not r:
+                    continue
+                for k in ("base", "ia"):
+                    if r[k] and r[f"perdida_{k}"] is not None and r[f"dur_{k}"] is not None:
+                        lleg[k].append((r[k][0][0] + r[f"dur_{k}"], r[f"perdida_{k}"]))
+            acum = {}
+            for k in ("base", "ia"):
+                arr = np.array(lleg[k]) if lleg[k] else np.zeros((0, 2))
+                acum[k] = [round(float(arr[arr[:, 0] <= m * 60, 1].sum() / 3600), 2) for m in range(m0, m1 + 1)]
+            sil["acumulado"] = {"min0": m0, **acum}
+            t_fin = sil["incidente"]["t_fin_min"] * 60
+            for x in autos:
+                x["durante"] = bool(t_ini <= x["aviso"][0] <= t_fin and x["afectado"] and x["ganancia"] is not None)
+            ok = [x for x in autos if x["durante"]]
+            g = np.array([x["ganancia"] / 60 for x in ok]) if ok else np.zeros(0)
+            bordes = [-np.inf, 0, 2, 4, 8, 12, 16, np.inf]
+            etq = ["< 0", "0–2", "2–4", "4–8", "8–12", "12–16", "> 16"]
+            sil["histograma"] = {"cuentas": [int(((g >= lo) & (g < hi)).sum()) for lo, hi in zip(bordes[:-1], bordes[1:])],
+                                 "desde": [float(b) if np.isfinite(b) else -99.0 for b in bordes[:-1]], "etiquetas": etq,
+                                 "ganan_pct": round(float(100 * (g > 0).mean()), 1) if len(g) else None, "pierden": int((g < 0).sum())}
+            foco = sorted(ok, key=lambda x: x["perdida"][0] - x["perdida"][1], reverse=True)[:8]
+            sil["autos"] = autos
+            sil["foco"] = [x["id"] for x in foco]
+            sil["autos_resumen"] = {"avisados": len(autos), "durante_incidente": len(ok),
+                                    "ganancia_media_s": round(float(np.mean([x["perdida"][0] - x["perdida"][1] for x in ok])), 1) if ok else None}
     # ---- contexto
     dv = tabla[tabla.split.isin(["train", "val", "test", "test_estres"])].reset_index()   # los dias extra del AID no tienen viajes completos
     color = {"train": "#2ad4c4", "val": "#ffb547", "test": "#ff4d5e", "test_estres": "#8fa0b6"}
